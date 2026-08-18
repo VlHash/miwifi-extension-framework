@@ -109,11 +109,18 @@
 .mwef-form-row {
     display: flex;
     align-items: flex-start;
+    float: none !important;
+    clear: both;
+    box-sizing: border-box;
+    width: 100% !important;
     min-height: 64px;
     padding: 8px 0;
 }
-.mwef-form-row > label { box-sizing: border-box; width: 190px; padding: 10px 22px 0 0; color: #333; font-size: 14px; text-align: right; }
-.mwef-control { width: 520px; }
+.mwef-form-row > label { float: none !important; box-sizing: border-box; flex: 0 0 190px; width: 190px; padding: 10px 22px 0 0; color: #333; font-size: 14px; text-align: right; }
+.mwef-form-row > label.k { position: static !important; top: auto; right: auto; display: block; height: 24px; margin-top: 9px; padding-top: 0; line-height: 24px; pointer-events: auto; }
+.mwef-control { float: none !important; flex: 0 0 520px; width: 520px; }
+.mwef-native-select.v { display: block; float: none !important; width: 520px; margin: 0 !important; }
+.mwef-native-select .textContent { box-sizing: content-box; width: 498px !important; }
 .mwef-input,
 .mwef-select {
     box-sizing: border-box;
@@ -130,7 +137,7 @@
 .mwef-select { cursor: pointer; }
 .mwef-input:focus, .mwef-select:focus { border-color: var(--mwef-bright-blue); box-shadow: 0 0 0 2px rgba(72,151,251,.12); }
 .mwef-tip { margin: 7px 0 0; color: var(--mwef-muted); font-size: 12px; line-height: 1.7; }
-.mwef-form-actions { padding: 18px 0 0 190px; }
+.mwef-form-actions { padding: 18px 0 0; text-align: center; }
 
 .mwef-btn {
     min-width: 150px;
@@ -198,7 +205,8 @@
     .xqext-module-note { display: none; }
     #bd.xqext-page { width: auto; margin: 0 18px; padding: 28px 18px 34px; }
     .mwef-form-row { display: block; }
-    .mwef-form-row > label { width: auto; padding: 0 0 7px; text-align: left; }
-    .mwef-control { width: auto; }
+    .mwef-form-row > label { width: auto; flex-basis: auto; padding: 0 0 7px; text-align: left; }
+    .mwef-control { width: auto; flex-basis: auto; }
+    .mwef-native-select, .mwef-native-select .textContent { width: 100% !important; }
     .mwef-form-actions { padding-left: 0; }
 }

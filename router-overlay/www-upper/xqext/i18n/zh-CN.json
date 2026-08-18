@@ -40,5 +40,18 @@
   "packageExtension": "请选择 .tar.gz 或 .tgz 插件包。",
   "invalidResponse": "服务器返回格式错误",
   "networkError": "网络请求失败",
-  "requestTimeout": "请求超时"
+  "requestTimeout": "请求超时",
+  "builtIn": "内置",
+  "permissionSystemRead": "读取系统状态",
+  "permissionSystemReadHelp": "读取内核、硬件、负载和其他只读运行信息。",
+  "permissionFilesystemRead": "读取文件",
+  "permissionFilesystemReadHelp": "读取插件声明范围内的路由器文件。",
+  "permissionFilesystemWrite": "写入文件",
+  "permissionFilesystemWriteHelp": "写入插件目录或声明的数据目录。",
+  "permissionNetworkClient": "访问网络",
+  "permissionNetworkClientHelp": "由路由器主动连接外部网络服务。",
+  "permissionServiceControl": "控制服务",
+  "permissionServiceControlHelp": "启动、停止或重新加载声明的系统服务。",
+  "permissionShellExecute": "执行 Shell",
+  "permissionShellExecuteHelp": "执行插件包中声明的 Shell 脚本，风险较高。"
 }

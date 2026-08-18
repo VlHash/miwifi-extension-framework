@@ -40,5 +40,18 @@
   "packageExtension": "Choose a .tar.gz or .tgz package.",
   "invalidResponse": "Invalid server response",
   "networkError": "Network request failed",
-  "requestTimeout": "Request timed out"
+  "requestTimeout": "Request timed out",
+  "builtIn": "built-in",
+  "permissionSystemRead": "Read system status",
+  "permissionSystemReadHelp": "Read kernel, hardware, load, and other read-only runtime information.",
+  "permissionFilesystemRead": "Read files",
+  "permissionFilesystemReadHelp": "Read router files within the scope declared by the plugin.",
+  "permissionFilesystemWrite": "Write files",
+  "permissionFilesystemWriteHelp": "Write to the plugin directory or declared data directories.",
+  "permissionNetworkClient": "Access the network",
+  "permissionNetworkClientHelp": "Connect from the router to external network services.",
+  "permissionServiceControl": "Control services",
+  "permissionServiceControlHelp": "Start, stop, or reload declared system services.",
+  "permissionShellExecute": "Execute Shell",
+  "permissionShellExecuteHelp": "Run declared Shell scripts from the plugin package; this is a high-risk permission."
 }

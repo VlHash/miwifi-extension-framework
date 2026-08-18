@@ -4,7 +4,7 @@ local fs = require "nixio.fs"
 local http = require "luci.http"
 local json = require "luci.json"
 
-local VERSION = "0.2.0"
+local VERSION = "0.2.2"
 
 local function read_file(path, binary)
     local handle = io.open(path, binary and "rb" or "r")
@@ -253,6 +253,12 @@ end
 
 local function safe_xiaomi_info()
     local result = {}
+    local uci_ok, uci = pcall(require, "luci.model.uci")
+    if uci_ok and uci then
+        local cursor = uci.cursor()
+        result.display_name = cursor:get("misc", "hardware", "displayName")
+        result.uci_hardware = cursor:get("misc", "hardware", "model")
+    end
     local ok, sysutil = pcall(require, "xiaoqiang.util.XQSysUtil")
     if not ok or not sysutil then
         return result
@@ -270,7 +276,29 @@ local function safe_xiaomi_info()
             end
         end
     end
+    if not result.hardware or result.hardware == "" then
+        result.hardware = result.uci_hardware
+    end
     return result
+end
+
+local model_fallbacks = {
+    RD08 = "Xiaomi BE6500 Pro"
+}
+
+local function product_model(xiaomi)
+    local name = trim(xiaomi.display_name)
+    if name and name ~= "" then
+        name = name:gsub("^Xiaomi路由器%s*", "Xiaomi ")
+        name = name:gsub("^小米路由器%s*", "Xiaomi ")
+        name = name:gsub("%s+", " ")
+        return trim(name)
+    end
+    local hardware = trim(xiaomi.hardware or xiaomi.uci_hardware)
+    if hardware then
+        return model_fallbacks[hardware:upper()]
+    end
+    return nil
 end
 
 local function collect()
@@ -280,6 +308,8 @@ local function collect()
     local kernel = (read_file("/proc/version") or ""):match("Linux version%s+(%S+)")
     local partitions, storage = read_partitions()
     local xiaomi = safe_xiaomi_info()
+    local detected_model = product_model(xiaomi)
+    local soc_model = read_line("/tmp/sysinfo/model")
 
     return {
         code = 0,
@@ -287,7 +317,9 @@ local function collect()
         timestamp = os.time(),
         system = {
             hostname = read_line("/proc/sys/kernel/hostname"),
-            model = read_line("/tmp/sysinfo/model"),
+            device_name = detected_model or xiaomi.display_name,
+            model = detected_model or soc_model,
+            soc_model = soc_model,
             board = read_line("/tmp/sysinfo/board_name"),
             target = release.DISTRIB_TARGET or osrelease.LEDE_BOARD,
             architecture = release.DISTRIB_ARCH or osrelease.LEDE_ARCH,
@@ -295,7 +327,7 @@ local function collect()
             uptime = uptime,
             firmware = xiaomi.firmware or release.DISTRIB_DESCRIPTION or osrelease.PRETTY_NAME,
             channel = xiaomi.channel,
-            hardware = xiaomi.hardware
+            hardware = xiaomi.hardware or xiaomi.uci_hardware
         },
         cpu = parse_cpuinfo(),
         memory = parse_meminfo(),

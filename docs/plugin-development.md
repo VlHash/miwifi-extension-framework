@@ -114,4 +114,4 @@ scripts/
 ./tools/build-plugin.ps1 -Source examples/hello-mwef
 ```
 
-发布前至少验证 JSON、JavaScript 语法、Lua 语法、Shell 语法、归档路径和中英语言文件。Commit Message 不得包含 `Co-authored-by`、`coworker` 或任何自动追加的协作者标签。
+发布前至少验证 JSON、JavaScript 语法、Lua 语法、Shell 语法、归档路径和中英语言文件。

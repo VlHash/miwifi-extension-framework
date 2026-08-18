@@ -4,12 +4,12 @@
     var config = window.MWEF_CONFIG || {};
     var state = { data: null, i18n: {}, modal: null };
     var permissionHelp = {
-        'system.read': ['读取系统状态', '读取内核、硬件、负载和其他只读运行信息。'],
-        'filesystem.read': ['读取文件', '读取插件声明范围内的路由器文件。'],
-        'filesystem.write': ['写入文件', '写入插件目录或声明的数据目录。'],
-        'network.client': ['访问网络', '由路由器主动连接外部网络服务。'],
-        'service.control': ['控制服务', '启动、停止或重新加载声明的系统服务。'],
-        'shell.execute': ['执行 Shell', '执行插件包中声明的 Shell 脚本，风险较高。']
+        'system.read': ['permissionSystemRead', 'permissionSystemReadHelp'],
+        'filesystem.read': ['permissionFilesystemRead', 'permissionFilesystemReadHelp'],
+        'filesystem.write': ['permissionFilesystemWrite', 'permissionFilesystemWriteHelp'],
+        'network.client': ['permissionNetworkClient', 'permissionNetworkClientHelp'],
+        'service.control': ['permissionServiceControl', 'permissionServiceControlHelp'],
+        'shell.execute': ['permissionShellExecute', 'permissionShellExecuteHelp']
     };
 
     function byId(id) { return document.getElementById(id); }
@@ -80,6 +80,16 @@
         if (!disabled) node.onclick = handler;
         return node;
     }
+    function syncBeautifiedSelect(select) {
+        if (!select) return;
+        var jq = window.jQuery || window.$;
+        if (jq && typeof jq.selectBeautify === 'function' && !jq(select).siblings('.textContent').length) {
+            jq.selectBeautify({ container: '#mwef-general-settings' });
+        }
+        var dummy = select.parentNode && select.parentNode.querySelector('.textContent .dummy');
+        var option = select.options[select.selectedIndex];
+        if (dummy && option) dummy.textContent = option.textContent || option.innerText || '';
+    }
     function renderPlugins(plugins) {
         var body = byId('mwef-plugin-list');
         clear(body);
@@ -95,7 +105,8 @@
             var row = el('tr');
             var nameCell = el('td');
             nameCell.appendChild(el('span', 'mwef-plugin-name', plugin.name || plugin.id));
-            nameCell.appendChild(el('small', 'mwef-plugin-id', plugin.id + (plugin.builtin ? ' · built-in' : '')));
+            nameCell.appendChild(el('small', 'mwef-plugin-id', plugin.id +
+                (plugin.builtin ? ' · ' + tr('builtIn', '内置') : '')));
             row.appendChild(nameCell);
             row.appendChild(el('td', '', plugin.version || '--'));
             var statusCell = el('td');
@@ -123,13 +134,14 @@
         byId('mwef-name').textContent = data.framework.name;
         byId('mwef-version').textContent = 'v' + data.framework.version;
         byId('mwef-language').value = data.settings.language;
+        syncBeautifiedSelect(byId('mwef-language'));
         byId('mwef-plugin-directory').value = data.settings.pluginDirectory;
         renderPlugins(data.plugins);
     }
     function loadLanguage(language) {
         return new Promise(function (resolve) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.0', true);
+            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.2', true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) return;
                 try { if (xhr.status === 200) state.i18n = JSON.parse(xhr.responseText); } catch (error) {}
@@ -160,8 +172,8 @@
         input.value = permission;
         input.checked = !!checked;
         var content = el('span');
-        content.appendChild(el('strong', '', help[0] + ' · ' + permission));
-        content.appendChild(el('small', '', help[1]));
+        content.appendChild(el('strong', '', tr(help[0], permission) + ' · ' + permission));
+        content.appendChild(el('small', '', tr(help[1], '')));
         label.appendChild(input);
         label.appendChild(content);
         return label;

@@ -5,7 +5,7 @@ local http = require "luci.http"
 local json = require "luci.json"
 
 local BASE = "/data/other_vol/xqext"
-local VERSION = "0.2.0"
+local VERSION = "0.2.2"
 local DEFAULT_PLUGIN_DIR = BASE .. "/plugins"
 local LANGUAGE_FILE = BASE .. "/config/language"
 local PLUGIN_DIR_FILE = BASE .. "/config/plugin-directory"

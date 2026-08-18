@@ -1,13 +1,13 @@
 /* MWEF built-in system plugin */
 :root {
-    --xq-blue: #0059fa;
-    --xq-cyan: #18b9ee;
+    --xq-blue: #2673bf;
+    --xq-cyan: #18aede;
     --xq-orange: #ff6a00;
     --xq-green: #1dbf73;
     --xq-red: #ef4444;
-    --xq-ink: #1f2937;
-    --xq-muted: #7d8794;
-    --xq-line: #e9edf2;
+    --xq-ink: #333;
+    --xq-muted: #999;
+    --xq-line: #e5e5e5;
     --xq-surface: #ffffff;
     --xq-router-blue: #1782dd;
 }
@@ -84,8 +84,9 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: 18px;
-    padding: 0 2px;
+    margin-bottom: 32px;
+    padding: 0 0 16px;
+    border-bottom: 1px solid var(--xq-line);
 }
 
 .xqext-eyebrow,
@@ -100,8 +101,9 @@
 
 .xqext-titlebar h2 {
     margin: 0;
-    color: #172033;
-    font-size: 28px;
+    color: var(--xq-blue);
+    font-size: 22px;
+    font-weight: 400;
     line-height: 1.2;
 }
 
@@ -156,25 +158,28 @@
 
 .xqext-card {
     box-sizing: border-box;
-    margin-bottom: 18px;
-    padding: 22px 24px;
-    border: 1px solid rgba(31, 41, 55, .055);
-    border-radius: 12px;
+    margin-bottom: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     background: var(--xq-surface);
-    box-shadow: 0 5px 22px rgba(31, 45, 65, .045);
+    box-shadow: none;
 }
 
 .xqext-card-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--xq-line);
 }
 
 .xqext-card-head h3 {
     margin: 0;
-    color: #273044;
-    font-size: 17px;
+    color: var(--xq-blue);
+    font-size: 18px;
+    font-weight: 400;
     line-height: 1.25;
 }
 
@@ -188,17 +193,17 @@
     grid-template-columns: repeat(4, 1fr);
     border-top: 1px solid var(--xq-line);
     border-left: 1px solid var(--xq-line);
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
 }
 
 .xqext-info-item {
     box-sizing: border-box;
-    min-height: 86px;
+    min-height: 82px;
     padding: 15px 17px;
     border-right: 1px solid var(--xq-line);
     border-bottom: 1px solid var(--xq-line);
-    background: linear-gradient(145deg, #fff 0%, #fbfcfd 100%);
+    background: #fff;
 }
 
 .xqext-info-item dt {
@@ -209,7 +214,7 @@
 
 .xqext-info-item dd {
     margin: 0;
-    color: #253047;
+    color: #333;
     font-size: 13px;
     font-weight: 700;
     line-height: 1.45;
@@ -233,11 +238,26 @@
 .xqext-chart-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px;
+    gap: 34px;
 }
 
 .xqext-chart-card {
     min-width: 0;
+    padding-bottom: 10px;
+}
+
+.xqext-chart-grid .xqext-card-head {
+    box-sizing: border-box;
+    min-height: 45px;
+    align-items: center;
+}
+
+.xqext-chart-grid .xqext-card-head h3,
+.xqext-chart-grid .xqext-metric,
+.xqext-chart-grid .xqext-legend {
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 24px;
 }
 
 .xqext-metric {
@@ -313,7 +333,7 @@
 }
 
 .xqext-thermal-average {
-    padding: 4px 0 2px;
+    padding: 8px 0 5px;
 }
 
 .xqext-thermal-details {
@@ -366,7 +386,7 @@
 .xqext-progress {
     position: relative;
     height: 8px;
-    border-radius: 999px;
+    border-radius: 0;
     background: #edf0f4;
     overflow: hidden;
 }
@@ -391,10 +411,20 @@
 }
 
 .xqext-storage-summary {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
     margin-bottom: 20px;
-    padding: 15px 17px;
-    border-radius: 9px;
-    background: #f7f9fc;
+    padding: 8px 0 5px;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    background: transparent;
+    cursor: pointer;
+}
+
+.xqext-storage-summary:hover .xqext-storage-head span {
+    color: var(--xq-blue);
 }
 
 .xqext-storage-head strong {
@@ -409,11 +439,16 @@
     gap: 14px 24px;
 }
 
+.xqext-partitions[hidden] {
+    display: none;
+}
+
 .xqext-partition {
     min-width: 0;
-    padding: 13px 14px;
-    border: 1px solid var(--xq-line);
-    border-radius: 8px;
+    padding: 13px 0;
+    border: 0;
+    border-bottom: 1px solid var(--xq-line);
+    border-radius: 0;
 }
 
 .xqext-partition-title {

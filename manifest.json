@@ -3,7 +3,7 @@
   "legacyId": "xqext",
   "name": "MiWiFi-Extension-Framework",
   "shortName": "MWEF",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "author": "VlHash",
   "license": "MIT",
   "target": "Xiaomi Router WebUI",

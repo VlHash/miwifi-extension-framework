@@ -11,7 +11,9 @@
         ramCached: [],
         i18n: {},
         timer: null,
-        stopped: false
+        stopped: false,
+        thermalExpanded: false,
+        storageExpanded: false
     };
 
     function byId(id) {
@@ -74,10 +76,10 @@
         var minutes = Math.floor(seconds / 60);
         var secs = seconds - minutes * 60;
         var parts = [];
-        if (days) parts.push(days + ' 天');
-        if (days || hours) parts.push(hours + ' 小时');
-        parts.push(minutes + ' 分');
-        parts.push(secs + ' 秒');
+        if (days) parts.push(days + ' ' + tr('days', '天'));
+        if (days || hours) parts.push(hours + ' ' + tr('hours', '小时'));
+        parts.push(minutes + ' ' + tr('minutes', '分'));
+        parts.push(secs + ' ' + tr('seconds', '秒'));
         return parts.join(' ');
     }
 
@@ -215,20 +217,21 @@
         var cpu = data.cpu || {};
         var load = data.load || {};
         var started = finite(data.timestamp) - finite(system.uptime);
-        var cpuDetails = (cpu.name || '--') + ' · ' + (cpu.cores || '--') + ' 核';
+        var cpuDetails = (cpu.name || system.soc_model || '--') + ' · ' +
+            (cpu.cores || '--') + ' ' + tr('cores', '核');
         var loadText = [load.one, load.five, load.fifteen].map(function (value) {
             return finite(value).toFixed(2);
         }).join(' / ');
         var rows = [
             [tr('model', '硬件型号'), system.model || '--'],
+            [tr('hardwareCode', '硬件代号'), system.hardware || '--'],
             [tr('target', 'Target Platform'), system.target || '--'],
             [tr('kernel', '内核版本'), system.kernel || '--'],
-            [tr('uptime', '运行时间'), formatDuration(system.uptime)],
             [tr('cpuSoc', 'CPU / SoC'), cpuDetails],
             [tr('cpuFrequency', 'CPU 频率'), formatFrequency(cpu.current_hz) + ' / ' + formatFrequency(cpu.max_hz)],
             [tr('architecture', '系统架构'), system.architecture || ('ARMv' + (cpu.architecture || '--'))],
             [tr('firmware', '固件版本'), system.firmware || '--'],
-            [tr('hostname', '设备名称'), system.hostname || '--'],
+            [tr('hostname', '主机名'), system.hostname || '--'],
             [tr('board', 'Board'), system.board || '--'],
             [tr('load', '系统负载'), loadText],
             [tr('bootTime', '启动时间'), formatDate(started)]
@@ -241,9 +244,11 @@
             item.appendChild(element('dd', '', row[1]));
             container.appendChild(item);
         });
-        setText('xqext-clock', '路由器时间 ' + formatDate(data.timestamp));
-        setText('xqext-router-name', system.hostname || '小米路由器');
-        setText('xqext-model-subtitle', (system.model || system.hardware || '小米路由器') + ' ' + tr('subtitleSuffix', '硬件与资源运行状态'));
+        setText('xqext-clock', tr('uptime', '运行时间') + ' ' + formatDuration(system.uptime) + ' · ' +
+            tr('routerTime', '路由器时间') + ' ' + formatDate(data.timestamp));
+        setText('xqext-router-name', system.device_name || system.model || system.hostname || 'Xiaomi Router');
+        setText('xqext-model-subtitle', (system.model || system.hardware || 'Xiaomi Router') + ' · ' +
+            tr('subtitleSuffix', '硬件与资源运行状态'));
     }
 
     function renderCharts(data) {
@@ -261,18 +266,21 @@
         pushPoint(state.ramCached, cachedPercent);
         setText('xqext-ram-used', usedPercent.toFixed(1) + '%');
         setText('xqext-ram-cache', cachedPercent.toFixed(1) + '%');
-        setText('xqext-ram-meta', '已使用 ' + formatBytes(memory.used) + ' · 已缓存 ' +
-            formatBytes(memory.cached) + ' · 可用 ' + formatBytes(memory.available) + ' · 总计 ' + formatBytes(memory.total));
-        setText('xqext-cpu-meta', (cpu.name || 'CPU') + ' · ' + (cpu.cores || '--') + ' 核 · 当前 ' +
-            formatFrequency(cpu.current_hz) + ' · 最高 ' + formatFrequency(cpu.max_hz));
+        setText('xqext-ram-meta', tr('used', '已使用') + ' ' + formatBytes(memory.used) + ' · ' +
+            tr('cached', '已缓存') + ' ' + formatBytes(memory.cached) + ' · ' +
+            tr('available', '可用') + ' ' + formatBytes(memory.available) + ' · ' +
+            tr('total', '总计') + ' ' + formatBytes(memory.total));
+        setText('xqext-cpu-meta', (cpu.name || 'CPU') + ' · ' + (cpu.cores || '--') + ' ' +
+            tr('cores', '核') + ' · ' + tr('current', '当前') + ' ' + formatFrequency(cpu.current_hz) +
+            ' · ' + tr('maximum', '最高') + ' ' + formatFrequency(cpu.max_hz));
         cpuChart.draw();
         ramChart.draw();
     }
 
     function sensorLabel(sensor, index) {
         var match = String(sensor.type || '').match(/sensor(\d+)$/i);
-        if (match) return 'SoC 传感器 ' + match[1];
-        return sensor.type || ('温度传感器 ' + (index + 1));
+        if (match) return tr('socSensor', 'SoC 传感器') + ' ' + match[1];
+        return sensor.type || (tr('temperatureSensor', '温度传感器') + ' ' + (index + 1));
     }
 
     function temperatureClass(value) {
@@ -294,11 +302,13 @@
         if (sensors.length) {
             var summary = element('button', 'xqext-thermal-summary');
             summary.type = 'button';
-            summary.setAttribute('aria-expanded', 'false');
+            summary.setAttribute('aria-expanded', state.thermalExpanded ? 'true' : 'false');
+            summary.title = state.thermalExpanded ? tr('collapse', '点击收起') : tr('expand', '点击展开');
             var item = element('div', 'xqext-thermal-item xqext-thermal-average');
             var label = element('div', 'xqext-thermal-label');
             label.appendChild(element('span', '', tr('averageTemperature', '总体平均温度')));
-            label.appendChild(element('span', 'xqext-thermal-value', average.toFixed(1) + '°C  ▾'));
+            label.appendChild(element('span', 'xqext-thermal-value', average.toFixed(1) + '°C  ' +
+                (state.thermalExpanded ? '▴' : '▾')));
             var progress = element('div', 'xqext-progress ' + temperatureClass(average));
             var bar = element('i');
             bar.style.width = clamp(average, 0, 100) + '%';
@@ -309,7 +319,7 @@
             container.appendChild(summary);
 
             var details = element('div', 'xqext-thermal-details');
-            details.hidden = true;
+            details.hidden = !state.thermalExpanded;
             sensors.forEach(function (sensor, index) {
                 var value = finite(sensor.celsius);
                 var sensorItem = element('div', 'xqext-thermal-item');
@@ -324,14 +334,16 @@
             });
             container.appendChild(details);
             summary.onclick = function () {
-                details.hidden = !details.hidden;
+                state.thermalExpanded = !state.thermalExpanded;
+                details.hidden = !state.thermalExpanded;
                 summary.setAttribute('aria-expanded', details.hidden ? 'false' : 'true');
+                summary.title = details.hidden ? tr('expand', '点击展开') : tr('collapse', '点击收起');
                 var valueNode = summary.querySelector('.xqext-thermal-value');
                 valueNode.textContent = average.toFixed(1) + '°C  ' + (details.hidden ? '▾' : '▴');
             };
         }
         if (!sensors.length) {
-            container.appendChild(element('p', 'xqext-muted', '当前固件未暴露温度传感器。'));
+            container.appendChild(element('p', 'xqext-muted', tr('noThermalSensors', '当前固件未暴露温度传感器。')));
         }
         var maxNode = byId('xqext-temp-max');
         maxNode.textContent = sensors.length ? average.toFixed(1) + '°C' : '--°C';
@@ -346,24 +358,41 @@
         return progress;
     }
 
+    function partitionLabel(partition) {
+        var labels = {
+            '/data': ['partitionSystemConfig', '系统配置'],
+            '/data/usr': ['partitionUserData', '用户数据'],
+            '/data/userdisk': ['partitionPluginStorage', '插件存储'],
+            '/data/other_vol': ['partitionPersistent', '持久化扩展区'],
+            '/data/etc': ['partitionSecurity', '安全配置'],
+            '/data/other': ['partitionAppData', '应用数据']
+        };
+        var entry = labels[partition.mountpoint];
+        return entry ? tr(entry[0], entry[1]) : (partition.label || partition.mountpoint || '--');
+    }
+
     function renderStorage(data) {
         var storage = data.storage || {};
         var partitions = data.partitions || [];
         var summary = byId('xqext-storage-summary');
         clear(summary);
+        summary.setAttribute('aria-expanded', state.storageExpanded ? 'true' : 'false');
+        summary.title = state.storageExpanded ? tr('collapse', '点击收起') : tr('expand', '点击展开');
         var head = element('div', 'xqext-storage-head');
-        head.appendChild(element('span', '', '可写分区总占用'));
-        head.appendChild(element('strong', '', finite(storage.percent).toFixed(1) + '%'));
+        head.appendChild(element('span', '', tr('writableStorageTotal', '可写分区总占用')));
+        head.appendChild(element('strong', '', finite(storage.percent).toFixed(1) + '%  ' +
+            (state.storageExpanded ? '▴' : '▾')));
         summary.appendChild(head);
         summary.appendChild(makeProgress(storage.percent));
         setText('xqext-storage-total', formatBytes(storage.used) + ' / ' + formatBytes(storage.total));
 
         var container = byId('xqext-partitions');
         clear(container);
+        container.hidden = !state.storageExpanded;
         partitions.forEach(function (partition) {
             var item = element('div', 'xqext-partition');
             var itemHead = element('div', 'xqext-partition-head');
-            var title = element('span', 'xqext-partition-title', partition.label || partition.mountpoint);
+            var title = element('span', 'xqext-partition-title', partitionLabel(partition));
             title.title = partition.mountpoint || '';
             title.appendChild(element('small', '', partition.fstype || ''));
             itemHead.appendChild(title);
@@ -371,12 +400,23 @@
             item.appendChild(itemHead);
             item.appendChild(makeProgress(partition.percent));
             item.appendChild(element('div', 'xqext-partition-meta',
-                formatBytes(partition.used) + ' 已用 / ' + formatBytes(partition.total) + ' 总计 · ' + (partition.mountpoint || '')));
+                formatBytes(partition.used) + ' ' + tr('partitionUsed', '已用') + ' / ' +
+                formatBytes(partition.total) + ' ' + tr('partitionTotal', '总计') + ' · ' +
+                (partition.mountpoint || '')));
             container.appendChild(item);
         });
         if (!partitions.length) {
-            container.appendChild(element('p', 'xqext-muted', '没有找到可显示的可写分区。'));
+            container.appendChild(element('p', 'xqext-muted', tr('noWritablePartitions', '没有找到可显示的可写分区。')));
         }
+        summary.onclick = function () {
+            state.storageExpanded = !state.storageExpanded;
+            container.hidden = !state.storageExpanded;
+            summary.setAttribute('aria-expanded', state.storageExpanded ? 'true' : 'false');
+            summary.title = state.storageExpanded ? tr('collapse', '点击收起') : tr('expand', '点击展开');
+            var valueNode = summary.querySelector('.xqext-storage-head strong');
+            valueNode.textContent = finite(storage.percent).toFixed(1) + '%  ' +
+                (state.storageExpanded ? '▴' : '▾');
+        };
     }
 
     function setConnection(mode, message) {
@@ -411,10 +451,10 @@
                     return;
                 }
                 try { resolve(JSON.parse(request.responseText)); }
-                catch (error) { reject(new Error('返回数据格式错误')); }
+                catch (error) { reject(new Error(tr('invalidData', '返回数据格式错误'))); }
             };
-            request.onerror = function () { reject(new Error('网络请求失败')); };
-            request.ontimeout = function () { reject(new Error('数据请求超时')); };
+            request.onerror = function () { reject(new Error(tr('networkRequestFailed', '网络请求失败'))); };
+            request.ontimeout = function () { reject(new Error(tr('dataRequestTimeout', '数据请求超时'))); };
             request.send(null);
         });
     }
@@ -422,13 +462,14 @@
     function poll() {
         if (state.stopped) return;
         requestJson(config.apiUrl).then(function (data) {
-            if (!data || data.code !== 0) throw new Error((data && data.message) || '接口返回异常');
+            if (!data || data.code !== 0) throw new Error((data && data.message) || tr('apiError', '接口返回异常'));
             render(data);
             showError('');
-            setConnection('online', '实时更新 · ' + formatDate(data.timestamp).split(' ')[1]);
+            setConnection('online', tr('liveUpdate', '实时更新') + ' · ' + formatDate(data.timestamp).split(' ')[1]);
         }).catch(function (error) {
-            setConnection('error', '数据连接异常');
-            showError('暂时无法读取系统信息：' + error.message + '。页面会自动重试。');
+            setConnection('error', tr('connectionError', '数据连接异常'));
+            showError(tr('readErrorPrefix', '暂时无法读取系统信息：') + error.message +
+                tr('retrySuffix', '。页面会自动重试。'));
         }).then(function () {
             if (!state.stopped) state.timer = window.setTimeout(poll, document.hidden ? interval * 3 : interval);
         });
