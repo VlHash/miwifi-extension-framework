@@ -11,7 +11,7 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
 <meta name="viewport" content="width=1200">
 <link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
 <link href="<%=resource%>/web/css/layout.css?v=<%=ver%>" rel="stylesheet">
-<link href="/xqext/core.css?v=0.2.2" rel="stylesheet">
+<link href="/xqext/core.css?v=0.2.3" rel="stylesheet">
 </head>
 <body>
 <div id="doc">
@@ -85,6 +85,7 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
     </div>
 </div>
 <%include("web/inc/footer")%>
+<%include("web/inc/g.js")%>
 
 <div id="mwef-modal-mask" class="mwef-modal-mask" hidden>
     <div class="mwef-modal" role="dialog" aria-modal="true" aria-labelledby="mwef-modal-title">
@@ -108,6 +109,6 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
 <script>
 window.MWEF_CONFIG = { apiUrl: <%=json.encode(apiUrl)%> };
 </script>
-<script src="/xqext/framework.js?v=0.2.2"></script>
+<script src="/xqext/framework.js?v=0.2.3"></script>
 </body>
 </html>

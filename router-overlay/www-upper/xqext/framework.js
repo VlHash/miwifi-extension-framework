@@ -141,7 +141,7 @@
     function loadLanguage(language) {
         return new Promise(function (resolve) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.2', true);
+            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.3', true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) return;
                 try { if (xhr.status === 200) state.i18n = JSON.parse(xhr.responseText); } catch (error) {}

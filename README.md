@@ -26,7 +26,7 @@ MWEF 不使用 `mtd write`、`mtd erase`、分区刷写或 Bootloader 修改，�
 ./scripts/build.ps1
 ```
 
-产物：`dist/mwef-0.2.2.tar.gz`
+产物：`dist/mwef-0.2.3.tar.gz`
 
 ## 安装/升级
 
