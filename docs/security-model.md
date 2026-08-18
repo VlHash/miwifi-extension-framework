@@ -1,35 +1,37 @@
-# MWEF 权限与安全模型
+# MWEF Permissions and Security Model
 
-## 目标
+**English** | [简体中文](security-model_CN.md)
 
-MWEF 在不修改只读固件、不写 MTD 的前提下，为插件提供可审查、可撤销的安装与运行机制。
+## Objective
 
-## 安装边界
+MWEF provides an auditable and reversible plugin installation and runtime mechanism without modifying read-only firmware or writing to MTD.
 
-1. 上传包只写入 `/tmp`，上限 8 MiB。
-2. 解包前检查每个 tar 路径，拒绝绝对路径、路径穿越和反斜杠路径。
-3. 解包后拒绝符号链接和特殊文件。
-4. Manifest 通过 Schema v1 约束后才展示权限确认。
-5. 安装使用同一文件系统内的 staging 目录；升级前将旧版本移入 `.recovery`。
-6. 插件启停后重建生成层，再重新挂载 OverlayFS。
+## Installation Boundary
 
-## 权限模型
+1. Uploaded packages are written only to `/tmp` and are limited to 8 MiB.
+2. Every tar path is checked before extraction; absolute paths, path traversal, and backslash-separated paths are rejected.
+3. Symbolic links and special files are rejected after extraction.
+4. Permission confirmation is shown only after the manifest passes Schema v1 validation.
+5. Installation uses a staging directory on the same filesystem; the previous version is moved into `.recovery` before an upgrade.
+6. Enabling or disabling a plugin rebuilds the generated layers and remounts OverlayFS.
 
-Manifest 的 `permissions` 是请求集合，`.grants` 是管理员批准集合。框架受控 Hook Runner 会在执行脚本前检查 `shell.execute`。插件管理页面可以随时收回或增加批准权限。
+## Permission Model
 
-MWEF 0.2.x 不声称提供 Linux namespace、seccomp 或独立 Unix 用户级别的强制沙箱。LuCI 控制器通常继承 Web 服务权限，因此源代码审查仍是安全边界的一部分。插件若使用未声明权限、直接调用 Shell、覆盖鉴权代码或逃逸自身目录，应被拒绝。
+The manifest `permissions` array is the requested set, while `.grants` stores the set approved by the administrator. The controlled MWEF hook runner checks for `shell.execute` before running a script. Approved permissions can be added or revoked at any time from the plugin-management page.
 
-## Shell 规则
+MWEF 0.2.x does not claim to provide a mandatory sandbox based on Linux namespaces, seccomp, or separate Unix users. LuCI controllers normally inherit the Web service's privileges, so source review remains part of the security boundary. A plugin should be rejected if it uses undeclared permissions, invokes shell commands directly, overwrites authentication code, or escapes its own directory.
 
-- Shell 文件必须位于 `scripts/`，文件名只能包含字母、数字、点、下划线和连字符。
-- 没有 `shell.execute` grant 时，MWEF Hook Runner 拒绝执行。
-- 不允许插件通过 Web 参数拼接 Shell 命令。
-- 不允许使用 `mtd write`、`mtd erase`、`dd` 写块设备、Bootloader 修改或固件分区操作。
-- 服务控制还必须声明 `service.control`。
+## Shell Rules
 
-## 恢复
+- Shell files must be located under `scripts/`; filenames may contain only letters, numbers, periods, underscores, and hyphens.
+- The MWEF hook runner refuses execution unless the `shell.execute` grant is present.
+- Plugins must not construct shell commands from Web parameters.
+- `mtd write`, `mtd erase`, block-device writes through `dd`, Bootloader modification, and firmware-partition operations are forbidden.
+- Controlling a service also requires the `service.control` permission.
 
-- 插件移除：移动到插件目录的 `.recovery/`。
-- 插件升级失败：恢复上一版本并重新 patch。
-- 框架卸载：解除挂载、移除启动项，并把 `/data/other_vol/xqext` 重命名保存。
-- 原始 `/www` 与 `/usr/lib/lua/luci` SquashFS 文件不被修改。
+## Recovery
+
+- Plugin removal moves the plugin into the installation directory's `.recovery/` folder.
+- A failed plugin upgrade restores the previous version and runs the patch process again.
+- Framework uninstallation detaches the mounts, removes the startup entry, and renames `/data/other_vol/xqext` for recovery.
+- The original SquashFS files under `/www` and `/usr/lib/lua/luci` are never modified.

@@ -10,7 +10,7 @@ $archive = Join-Path $output "mwef-0.2.3.tar.gz"
 
 Push-Location $workspace
 try {
-    tar -czf $archive router-overlay builtin-plugins scripts docs schema examples tools manifest.json README.md LICENSE
+    tar -czf $archive router-overlay builtin-plugins scripts docs schema examples tools manifest.json README.md README_CN.md LICENSE
 } finally {
     Pop-Location
 }
