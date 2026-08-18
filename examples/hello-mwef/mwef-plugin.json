@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "hello-mwef",
+  "name": {
+    "zh-CN": "Hello MWEF",
+    "en": "Hello MWEF"
+  },
+  "version": "1.0.0",
+  "description": {
+    "zh-CN": "演示菜单、LuCI 视图、静态资源和双语文件的最小插件。",
+    "en": "A minimal plugin demonstrating navigation, a LuCI view, static assets and bilingual resources."
+  },
+  "author": "VlHash",
+  "license": "MIT",
+  "mwef": ">=0.2.0",
+  "permissions": [],
+  "entrypoints": {
+    "web": "/web/xqext/hello_mwef"
+  },
+  "navigation": {
+    "label": {
+      "zh-CN": "示例插件",
+      "en": "Example Plugin"
+    },
+    "route": ["web", "xqext", "hello_mwef"],
+    "order": 100
+  }
+}

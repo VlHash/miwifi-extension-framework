@@ -1,0 +1,68 @@
+<%
+local fs = require("nixio.fs")
+local json = require("luci.json")
+local util = require("luci.util")
+local base = "/data/other_vol/xqext"
+local language = (fs.readfile(base .. "/config/language") or "zh-CN"):match("^%s*(.-)%s*$")
+local pluginDir = (fs.readfile(base .. "/config/plugin-directory") or (base .. "/plugins")):match("^%s*(.-)%s*$")
+local items = {}
+
+local function validSegment(value)
+    return type(value) == "string" and value:match("^[A-Za-z0-9_-]+$") ~= nil
+end
+
+local iterator = fs.dir(pluginDir)
+if iterator then
+    for id in iterator do
+        local root = pluginDir .. "/" .. id
+        if fs.stat(root .. "/.enabled") then
+            local raw = fs.readfile(root .. "/mwef-plugin.json")
+            local ok, manifest = pcall(json.decode, raw or "")
+            local navigation = ok and manifest and manifest.navigation
+            if type(navigation) == "table" and type(navigation.route) == "table" then
+                local route = {}
+                local valid = true
+                for _, segment in ipairs(navigation.route) do
+                    if not validSegment(segment) then valid = false; break end
+                    route[#route + 1] = segment
+                end
+                if valid and #route >= 3 then
+                    local label = navigation.label
+                    if type(label) == "table" then label = label[language] or label["zh-CN"] or label.en end
+                    items[#items + 1] = {
+                        id = id,
+                        label = label or manifest.id or id,
+                        href = luci.dispatcher.build_url(unpack(route)),
+                        active = string.find(REQUEST_URI, "/" .. route[#route]) ~= nil,
+                        order = tonumber(navigation.order) or 100
+                    }
+                end
+            end
+        end
+    end
+end
+
+if #items == 0 then
+    items[1] = {
+        id = "system",
+        label = language == "en" and "System Information" or "系统信息",
+        href = luci.dispatcher.build_url("web", "xqext", "system"),
+        active = string.find(REQUEST_URI, "/xqext/system") ~= nil,
+        order = 10
+    }
+end
+
+table.sort(items, function(a, b)
+    if a.order == b.order then return a.id < b.id end
+    return a.order < b.order
+end)
+%>
+<div class="xqext-module-nav" role="navigation" aria-label="MWEF 扩展设置模块">
+    <%for _, item in ipairs(items) do%>
+    <a <%if item.active then%>class="active"<%end%> href="<%=item.href%>"><span><%=util.pcdata(item.label)%></span></a>
+    <%end%>
+    <a <%if string.find(REQUEST_URI, "/xqext/framework") then%>class="active"<%end%> href="<%=luci.dispatcher.build_url("web", "xqext", "framework")%>">
+        <span><%=language == "en" and "Framework Settings" or "框架设置"%></span>
+    </a>
+    <span class="xqext-module-note">MiWiFi Extension Framework</span>
+</div>

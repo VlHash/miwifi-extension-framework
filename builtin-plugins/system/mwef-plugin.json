@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "system",
+  "name": {
+    "zh-CN": "系统信息",
+    "en": "System Information"
+  },
+  "version": "0.2.2",
+  "description": {
+    "zh-CN": "MWEF 内置的硬件、资源、温度和存储状态插件。",
+    "en": "Built-in hardware, resource, thermal and storage status plugin for MWEF."
+  },
+  "author": "VlHash",
+  "license": "MIT",
+  "mwef": ">=0.2.0",
+  "permissions": [
+    "system.read"
+  ],
+  "entrypoints": {
+    "web": "/web/xqext/system",
+    "api": "/web/xqextstatus"
+  },
+  "navigation": {
+    "label": {
+      "zh-CN": "系统信息",
+      "en": "System Information"
+    },
+    "route": ["web", "xqext", "system"],
+    "order": 10
+  }
+}

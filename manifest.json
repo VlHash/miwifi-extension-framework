@@ -1,0 +1,21 @@
+{
+  "id": "mwef",
+  "legacyId": "xqext",
+  "name": "MiWiFi-Extension-Framework",
+  "shortName": "MWEF",
+  "version": "0.2.2",
+  "author": "VlHash",
+  "license": "MIT",
+  "target": "Xiaomi Router WebUI",
+  "testedDevice": "Xiaomi Router BE6500 Pro",
+  "testedPlatform": "ipq53xx/generic",
+  "compatibility": {
+    "dataRoot": "/data/other_vol/xqext",
+    "webPrefix": "/xqext",
+    "luciRoute": "/web/xqext"
+  },
+  "builtinPlugins": ["system"],
+  "defaultPluginDirectory": "/data/other_vol/xqext/plugins",
+  "mountStrategy": "generated-overlayfs+bind",
+  "bootHook": "firewall.xqext"
+}

@@ -1,0 +1,18 @@
+.hello-mwef-section {
+    padding: 28px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.hello-mwef-section h3 {
+    margin: 0 0 12px;
+    color: #2673bf;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.hello-mwef-section p {
+    margin: 0;
+    color: #777;
+}

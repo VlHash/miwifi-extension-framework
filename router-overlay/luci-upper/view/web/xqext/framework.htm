@@ -1,0 +1,113 @@
+<%
+local ver = require("xiaoqiang.XQVersion").webVersion
+local json = require("luci.json")
+local fs = require("nixio.fs")
+local apiUrl = luci.dispatcher.build_url("web", "xqextapi")
+local language = (fs.readfile("/data/other_vol/xqext/config/language") or "zh-CN"):match("^%s*(.-)%s*$")
+local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设置 - MWEF"
+%>
+<%include("web/inc/head")%>
+<title><%=pageTitle%></title>
+<meta name="viewport" content="width=1200">
+<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+<link href="<%=resource%>/web/css/layout.css?v=<%=ver%>" rel="stylesheet">
+<link href="/xqext/core.css?v=0.2.2" rel="stylesheet">
+</head>
+<body>
+<div id="doc">
+    <%include("web/inc/header")%>
+    <%include("web/xqext/nav")%>
+    <div id="bd" class="xqext-page mwef-settings-page">
+        <div class="xqext-titlebar">
+            <div>
+                <p class="xqext-eyebrow">MIWIFI EXTENSION FRAMEWORK</p>
+                <h2 data-i18n="frameworkSettings">框架设置</h2>
+                <p class="xqext-subtitle"><span id="mwef-name">MiWiFi-Extension-Framework</span> · <span id="mwef-version">--</span></p>
+            </div>
+            <span class="mwef-state"><i></i><span data-i18n="frameworkReady">框架运行中</span></span>
+        </div>
+
+        <div id="mwef-message" class="mwef-message" hidden></div>
+
+        <section id="mwef-general-settings" class="mwef-section">
+            <h3 class="mwef-section-title" data-i18n="generalSettings">常规设置</h3>
+            <div class="mwef-form-row form-item-select">
+                <label class="k" for="mwef-language" data-i18n="language">界面语言</label>
+                <div class="mwef-control">
+                    <span class="v mwef-native-select">
+                        <select id="mwef-language" name="language" class="beautify" style="width: 498px;">
+                            <option value="zh-CN">中文（简体）</option>
+                            <option value="en">English</option>
+                        </select>
+                    </span>
+                    <p class="mwef-tip" data-i18n="languageTip">应用于框架和支持语言包的插件。</p>
+                </div>
+            </div>
+            <div class="mwef-form-row">
+                <label for="mwef-plugin-directory" data-i18n="pluginDirectory">插件安装目录</label>
+                <div class="mwef-control">
+                    <input id="mwef-plugin-directory" class="mwef-input" type="text" maxlength="160" placeholder="/data/other_vol/xqext/plugins">
+                    <p class="mwef-tip" data-i18n="pluginDirectoryTip">必须是 /data 下的持久化目录。更改目录时会复制现有插件，原目录保留用于恢复。</p>
+                </div>
+            </div>
+            <div class="mwef-form-actions">
+                <button id="mwef-save-settings" class="mwef-btn mwef-btn-primary" type="button" data-i18n="saveApply">保存并生效</button>
+            </div>
+        </section>
+
+        <section class="mwef-section">
+            <h3 class="mwef-section-title" data-i18n="installPlugin">安装插件</h3>
+            <div class="mwef-upload-row">
+                <div>
+                    <strong data-i18n="pluginPackage">MWEF 插件包</strong>
+                    <p class="mwef-tip" data-i18n="pluginPackageTip">选择符合规范的 .tar.gz 包；上传后会先显示权限申请，再由你确认安装。</p>
+                </div>
+                <input id="mwef-package" type="file" accept=".tar.gz,.tgz,application/gzip" hidden>
+                <button id="mwef-choose-package" class="mwef-btn" type="button" data-i18n="choosePackage">选择插件包</button>
+            </div>
+        </section>
+
+        <section class="mwef-section">
+            <h3 class="mwef-section-title" data-i18n="installedPlugins">已安装插件</h3>
+            <div class="mwef-table-wrap">
+                <table class="mwef-table">
+                    <thead><tr>
+                        <th data-i18n="pluginName">插件名称</th>
+                        <th data-i18n="version">版本</th>
+                        <th data-i18n="status">状态</th>
+                        <th data-i18n="permissions">权限</th>
+                        <th data-i18n="actions">操作</th>
+                    </tr></thead>
+                    <tbody id="mwef-plugin-list"><tr><td colspan="5" class="mwef-empty" data-i18n="loading">正在读取…</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+<%include("web/inc/footer")%>
+
+<div id="mwef-modal-mask" class="mwef-modal-mask" hidden>
+    <div class="mwef-modal" role="dialog" aria-modal="true" aria-labelledby="mwef-modal-title">
+        <div class="mwef-modal-head">
+            <h3 id="mwef-modal-title" data-i18n="permissionReview">权限确认</h3>
+            <button id="mwef-modal-close" class="mwef-modal-close" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="mwef-modal-body">
+            <h4 id="mwef-pending-name">--</h4>
+            <p id="mwef-pending-description" class="mwef-tip"></p>
+            <p class="mwef-permission-intro" data-i18n="permissionIntro">只授予插件确实需要的权限。Shell 权限允许插件执行声明的脚本，请谨慎启用。</p>
+            <div id="mwef-permission-list" class="mwef-permission-list"></div>
+        </div>
+        <div class="mwef-modal-actions">
+            <button id="mwef-modal-cancel" class="mwef-btn" type="button" data-i18n="cancel">取消</button>
+            <button id="mwef-modal-confirm" class="mwef-btn mwef-btn-primary" type="button" data-i18n="confirmInstall">确认安装</button>
+        </div>
+    </div>
+</div>
+
+<script>
+window.MWEF_CONFIG = { apiUrl: <%=json.encode(apiUrl)%> };
+</script>
+<script src="/xqext/framework.js?v=0.2.2"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/VlHash/miwifi-extension-framework/schema/mwef-plugin.schema.json",
+  "title": "MWEF Plugin Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "name", "version", "author", "permissions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,47}$" },
+    "name": { "$ref": "#/$defs/localized" },
+    "version": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "description": { "$ref": "#/$defs/localized" },
+    "author": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "license": { "type": "string", "maxLength": 40 },
+    "mwef": { "type": "string", "maxLength": 32 },
+    "permissions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["system.read", "filesystem.read", "filesystem.write", "network.client", "service.control", "shell.execute"]
+      }
+    },
+    "entrypoints": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "navigation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "route"],
+      "properties": {
+        "label": { "$ref": "#/$defs/localized" },
+        "route": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" }
+        },
+        "order": { "type": "integer", "minimum": 1, "maximum": 9999 }
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^scripts/[A-Za-z0-9_.-]+\\.sh$"
+      }
+    }
+  },
+  "$defs": {
+    "localized": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "zh-CN": { "type": "string", "minLength": 1 },
+            "en": { "type": "string", "minLength": 1 }
+          },
+          "anyOf": [{ "required": ["zh-CN"] }, { "required": ["en"] }]
+        }
+      ]
+    }
+  }
+}

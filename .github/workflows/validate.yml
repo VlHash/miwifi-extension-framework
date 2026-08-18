@@ -1,0 +1,43 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.1
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+
+      - name: Validate JSON
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Filter *.json | ForEach-Object {
+            $null = Get-Content -Raw -LiteralPath $_.FullName | ConvertFrom-Json
+          }
+
+      - name: Validate JavaScript
+        run: |
+          node --check router-overlay/www-upper/xqext/framework.js
+          node --check builtin-plugins/system/overlay/www/xqext/plugins/system/system.js
+
+      - name: Validate Lua
+        run: find router-overlay builtin-plugins examples -type f -name '*.lua' -exec luac5.1 -p {} \;
+
+      - name: Validate shell
+        run: find scripts -type f -name '*.sh' -exec sh -n {} \;
+
+      - name: Build example plugin
+        shell: pwsh
+        run: ./tools/build-plugin.ps1 -Source examples/hello-mwef
+
+      - name: Build MWEF
+        shell: pwsh
+        run: ./scripts/build.ps1
