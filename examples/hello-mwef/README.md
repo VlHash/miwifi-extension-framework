@@ -1,8 +1,10 @@
 # Hello MWEF
 
-MWEF Schema v1 的最小示例插件。作者：VlHash。
+**English** | [简体中文](README_CN.md)
 
-从仓库根目录构建：
+A minimal example plugin for MWEF Schema v1. Author: VlHash.
+
+Build it from the repository root:
 
 ```powershell
 ./tools/build-plugin.ps1 -Source examples/hello-mwef
