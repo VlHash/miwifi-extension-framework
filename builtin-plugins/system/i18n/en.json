@@ -1,0 +1,23 @@
+{
+  "pageTitle": "System Information",
+  "subtitleSuffix": "hardware and resource status",
+  "connecting": "Connecting",
+  "overview": "Device Overview",
+  "cpuUsage": "CPU Usage",
+  "ramUsage": "RAM Usage",
+  "thermal": "Hardware Temperature",
+  "averageTemperature": "Overall Average Temperature",
+  "storage": "Storage Usage",
+  "model": "Hardware Model",
+  "target": "Target Platform",
+  "kernel": "Kernel Version",
+  "uptime": "Uptime",
+  "cpuSoc": "CPU / SoC",
+  "cpuFrequency": "CPU Frequency",
+  "architecture": "Architecture",
+  "firmware": "Firmware Version",
+  "hostname": "Hostname",
+  "board": "Board",
+  "load": "System Load",
+  "bootTime": "Boot Time"
+}

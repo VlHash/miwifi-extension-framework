@@ -1,0 +1,23 @@
+{
+  "pageTitle": "系统信息",
+  "subtitleSuffix": "硬件与资源运行状态",
+  "connecting": "正在连接",
+  "overview": "设备概览",
+  "cpuUsage": "CPU 占用",
+  "ramUsage": "RAM 占用",
+  "thermal": "硬件温度",
+  "averageTemperature": "总体平均温度",
+  "storage": "存储占用",
+  "model": "硬件型号",
+  "target": "Target Platform",
+  "kernel": "内核版本",
+  "uptime": "运行时间",
+  "cpuSoc": "CPU / SoC",
+  "cpuFrequency": "CPU 频率",
+  "architecture": "系统架构",
+  "firmware": "固件版本",
+  "hostname": "设备名称",
+  "board": "Board",
+  "load": "系统负载",
+  "bootTime": "启动时间"
+}

@@ -1,0 +1,35 @@
+<%
+local ver = require("xiaoqiang.XQVersion").webVersion
+local fs = require("nixio.fs")
+local language = (fs.readfile("/data/other_vol/xqext/config/language") or "zh-CN"):match("^%s*(.-)%s*$")
+local english = language == "en"
+%>
+<%include("web/inc/head")%>
+<title>Hello MWEF</title>
+<meta name="viewport" content="width=1200">
+<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+<link href="<%=resource%>/web/css/layout.css?v=<%=ver%>" rel="stylesheet">
+<link href="/xqext/core.css?v=0.2.0" rel="stylesheet">
+<link href="/xqext/plugins/hello-mwef/hello.css?v=1.0.0" rel="stylesheet">
+</head>
+<body>
+<div id="doc">
+    <%include("web/inc/header")%>
+    <%include("web/xqext/nav")%>
+    <div id="bd" class="xqext-page hello-mwef-page">
+        <div class="xqext-titlebar">
+            <div>
+                <p class="xqext-eyebrow">MWEF · EXAMPLE</p>
+                <h2>Hello MWEF</h2>
+                <p class="xqext-subtitle"><%=english and "Minimal plugin example" or "最小插件示例"%></p>
+            </div>
+        </div>
+        <section class="hello-mwef-section">
+            <h3><%=english and "Plugin loaded" or "插件已加载"%></h3>
+            <p><%=english and "This page is supplied entirely by an installed MWEF plugin." or "此页面完全由已安装的 MWEF 插件提供。"%></p>
+        </section>
+    </div>
+</div>
+<%include("web/inc/footer")%>
+</body>
+</html>
