@@ -53,5 +53,9 @@
   "permissionServiceControl": "控制服务",
   "permissionServiceControlHelp": "启动、停止或重新加载声明的系统服务。",
   "permissionShellExecute": "执行 Shell",
-  "permissionShellExecuteHelp": "执行插件包中声明的 Shell 脚本，风险较高。"
+  "permissionShellExecuteHelp": "执行插件包中声明的 Shell 脚本，风险较高。",
+  "githubContributors": "GitHub 贡献者",
+  "contributorsLoading": "正在读取贡献者…",
+  "viewContributors": "在 GitHub 查看",
+  "contributionCount": "贡献 {count} 次"
 }

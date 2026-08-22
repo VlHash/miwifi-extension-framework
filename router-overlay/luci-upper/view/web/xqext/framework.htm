@@ -11,7 +11,7 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
 <meta name="viewport" content="width=1200">
 <link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
 <link href="<%=resource%>/web/css/layout.css?v=<%=ver%>" rel="stylesheet">
-<link href="/xqext/core.css?v=0.2.3" rel="stylesheet">
+<link href="/xqext/core.css?v=0.2.4" rel="stylesheet">
 </head>
 <body>
 <div id="doc">
@@ -82,6 +82,16 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
                 </table>
             </div>
         </section>
+
+        <section class="mwef-section mwef-contributors-section">
+            <h3 class="mwef-section-title" data-i18n="githubContributors">GitHub Contributors</h3>
+            <div class="mwef-contributors-bar">
+                <div id="mwef-contributors" class="mwef-contributors" aria-live="polite">
+                    <span class="mwef-contributors-loading" data-i18n="contributorsLoading">正在读取贡献者…</span>
+                </div>
+                <a class="mwef-contributors-link" href="https://github.com/VlHash/miwifi-extension-framework/graphs/contributors" target="_blank" rel="noopener noreferrer" data-i18n="viewContributors">在 GitHub 查看</a>
+            </div>
+        </section>
     </div>
 </div>
 <%include("web/inc/footer")%>
@@ -107,8 +117,12 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
 </div>
 
 <script>
-window.MWEF_CONFIG = { apiUrl: <%=json.encode(apiUrl)%> };
+window.MWEF_CONFIG = {
+    apiUrl: <%=json.encode(apiUrl)%>,
+    contributorsUrl: "https://api.github.com/repos/VlHash/miwifi-extension-framework/contributors?per_page=30&anon=1",
+    repositoryUrl: "https://github.com/VlHash/miwifi-extension-framework"
+};
 </script>
-<script src="/xqext/framework.js?v=0.2.3"></script>
+<script src="/xqext/framework.js?v=0.2.4"></script>
 </body>
 </html>

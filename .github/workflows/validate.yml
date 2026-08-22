@@ -32,7 +32,9 @@ jobs:
         run: find router-overlay builtin-plugins examples -type f -name '*.lua' -exec luac5.1 -p {} \;
 
       - name: Validate shell
-        run: find scripts -type f -name '*.sh' -exec sh -n {} \;
+        run: |
+          sh -n build.sh install.sh
+          find scripts -type f -name '*.sh' -exec sh -n {} \;
 
       - name: Build example plugin
         shell: pwsh
@@ -41,3 +43,10 @@ jobs:
       - name: Build MWEF
         shell: pwsh
         run: ./scripts/build.ps1
+
+      - name: Build MWEF on Unix
+        run: |
+          sh ./build.sh dist-unix
+          tar -tzf dist/mwef-0.2.4.tar.gz | LC_ALL=C sort > /tmp/mwef-powershell.list
+          tar -tzf dist-unix/mwef-0.2.4.tar.gz | LC_ALL=C sort > /tmp/mwef-unix.list
+          diff -u /tmp/mwef-powershell.list /tmp/mwef-unix.list
