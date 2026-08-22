@@ -32,6 +32,7 @@ fail() {
 acquire_lock() {
     local attempts owner
     attempts=0
+    [ ! -d /tmp/mwef-framework-update.lock ] || fail "a framework update is still running"
     mkdir -p "$BASE/runtime" || fail "cannot prepare transaction lock"
     while ! mkdir "$LOCK_DIR" 2>/dev/null; do
         owner="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"

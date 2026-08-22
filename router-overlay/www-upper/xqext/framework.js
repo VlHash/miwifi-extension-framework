@@ -2,7 +2,7 @@
     'use strict';
 
     var config = window.MWEF_CONFIG || {};
-    var state = { data: null, i18n: {}, modal: null };
+    var state = { data: null, i18n: {}, modal: null, update: null, updateBusy: false };
     var permissionHelp = {
         'system.read': ['permissionSystemRead', 'permissionSystemReadHelp'],
         'filesystem.read': ['permissionFilesystemRead', 'permissionFilesystemReadHelp'],
@@ -35,11 +35,11 @@
         });
         return parts.join('&');
     }
-    function request(action, method, payload) {
+    function request(action, method, payload, timeout) {
         return new Promise(function (resolve, reject) {
             var xhr = new XMLHttpRequest();
             xhr.open(method || 'GET', config.apiUrl + '?action=' + encodeURIComponent(action), true);
-            xhr.timeout = 20000;
+            xhr.timeout = timeout || 20000;
             xhr.setRequestHeader('Accept', 'application/json');
             if (payload && !(payload instanceof FormData)) {
                 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
@@ -191,6 +191,7 @@
         state.data = data;
         byId('mwef-name').textContent = data.framework.name;
         byId('mwef-version').textContent = 'v' + data.framework.version;
+        byId('mwef-update-current').textContent = 'v' + data.framework.version;
         byId('mwef-language').value = data.settings.language;
         syncBeautifiedSelect(byId('mwef-language'));
         byId('mwef-plugin-directory').value = data.settings.pluginDirectory;
@@ -199,7 +200,7 @@
     function loadLanguage(language) {
         return new Promise(function (resolve) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.4', true);
+            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.5', true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) return;
                 try { if (xhr.status === 200) state.i18n = JSON.parse(xhr.responseText); } catch (error) {}
@@ -289,6 +290,158 @@
         }).catch(function (error) { setMessage(error.message, true); });
     }
 
+    function replaceTokens(template, values) {
+        var result = template;
+        Object.keys(values || {}).forEach(function (key) {
+            result = result.replace(new RegExp('\\{' + key + '\\}', 'g'), String(values[key]));
+        });
+        return result;
+    }
+    function setUpdateBusy(busy) {
+        state.updateBusy = !!busy;
+        byId('mwef-check-update').disabled = state.updateBusy;
+        byId('mwef-online-update').disabled = state.updateBusy;
+        byId('mwef-choose-framework-package').disabled = state.updateBusy;
+    }
+    function renderUpdateStatus(data) {
+        state.update = data;
+        var status = byId('mwef-update-status');
+        status.textContent = data.updateAvailable
+            ? replaceTokens(tr('updateAvailable', '发现新版本 v{version}'), { version: data.latestVersion })
+            : replaceTokens(tr('frameworkUpToDate', 'v{version} 是索引中的最新版本'), { version: data.latestVersion });
+        var notes = byId('mwef-update-notes');
+        if (typeof data.notesUrl === 'string' && /^https:\/\/github\.com\/VlHash\/miwifi-extension-framework\/releases\/tag\//.test(data.notesUrl)) {
+            notes.href = data.notesUrl;
+            notes.hidden = false;
+        } else {
+            notes.hidden = true;
+            notes.removeAttribute('href');
+        }
+    }
+    function checkFrameworkUpdate(showMessage) {
+        setUpdateBusy(true);
+        if (showMessage !== false) setMessage(tr('checkingUpdate', '正在检查框架更新…'));
+        return request('framework-check', 'GET', null, 60000).then(function (data) {
+            renderUpdateStatus(data);
+            if (showMessage !== false) setMessage('');
+            return data;
+        }).catch(function (error) {
+            setMessage(error.message, true);
+            throw error;
+        }).then(function (data) {
+            setUpdateBusy(false);
+            return data;
+        }, function (error) {
+            setUpdateBusy(false);
+            throw error;
+        });
+    }
+    function finishFrameworkUpdate(data) {
+        setMessage(replaceTokens(tr('frameworkUpdateComplete', '框架 v{version} 已安装，正在重新载入…'), { version: data.version }));
+        window.setTimeout(function () { window.location.reload(); }, 1600);
+    }
+    function startOnlineUpdate() {
+        var ready = state.update ? Promise.resolve(state.update) : checkFrameworkUpdate(true);
+        ready.then(function (data) {
+            var current = state.data.framework.version;
+            var prompt = data.latestVersion === current
+                ? replaceTokens(tr('sameVersionUpdateConfirm', '确定从已验证的在线 Release 重新安装 MWEF v{version}？当前框架会保留用于恢复。'), { version: current })
+                : replaceTokens(tr('onlineUpdateConfirm', '确定将 MWEF 从 v{current} 更新到 v{latest}？当前框架会保留在恢复目录。'), {
+                    current: current,
+                    latest: data.latestVersion
+                });
+            if (!window.confirm(prompt)) return;
+            setUpdateBusy(true);
+            setMessage(tr('updatingFramework', '正在验证并更新框架，请勿关闭页面…'));
+            request('framework-online', 'POST', {}, 240000).then(finishFrameworkUpdate).catch(function (error) {
+                setUpdateBusy(false);
+                setMessage(error.message, true);
+            });
+        }).catch(function () {});
+    }
+    function uploadFrameworkRelease(file) {
+        if (!file) return;
+        var lower = file.name.toLowerCase();
+        if (lower.slice(-7) !== '.tar.gz' && lower.slice(-4) !== '.tgz') {
+            setMessage(tr('frameworkPackageExtension', '请选择 MWEF .tar.gz 或 .tgz Release 包。'), true);
+            return;
+        }
+        if (!file.size || file.size > 16 * 1024 * 1024) {
+            setMessage(tr('frameworkPackageSize', '框架 Release 包必须小于 16 MiB。'), true);
+            return;
+        }
+        setUpdateBusy(true);
+        setMessage(tr('uploadingFramework', '正在上传并检查框架 Release…'));
+        var uploadToken = null;
+        request('framework-upload-start', 'POST', { filename: file.name, size: file.size }, 30000).then(function (start) {
+            uploadToken = start.uploadToken;
+            return uploadFrameworkChunks(file, start.uploadToken, start.chunkSize || 32768);
+        }).then(function () {
+            return request('framework-upload-finish', 'POST', { token: uploadToken }, 90000);
+        }).then(function (data) {
+            var prompt = replaceTokens(tr('uploadUpdateConfirm', '确定从上传的 Release 安装 MWEF v{version}？当前已安装 v{current}。'), {
+                version: data.release.version,
+                current: data.release.currentVersion
+            });
+            if (!window.confirm(prompt)) {
+                request('framework-discard', 'POST', { token: data.pendingToken }, 30000).catch(function () {});
+                setUpdateBusy(false);
+                setMessage('');
+                return;
+            }
+            setMessage(tr('updatingFramework', '正在验证并更新框架，请勿关闭页面…'));
+            request('framework-apply', 'POST', { token: data.pendingToken }, 240000).then(finishFrameworkUpdate).catch(function (error) {
+                setUpdateBusy(false);
+                setMessage(error.message, true);
+            });
+        }).catch(function (error) {
+            if (uploadToken) request('framework-discard', 'POST', { token: uploadToken }, 30000).catch(function () {});
+            setUpdateBusy(false);
+            setMessage(error.message, true);
+        });
+    }
+    function uploadFrameworkChunk(token, sequence, blob) {
+        return new Promise(function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            var url = config.apiUrl + '?action=framework-upload-chunk&token=' + encodeURIComponent(token)
+                + '&sequence=' + encodeURIComponent(sequence);
+            var form = new FormData();
+            form.append('chunk', blob, 'chunk.bin');
+            xhr.open('POST', url, true);
+            xhr.timeout = 45000;
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) return;
+                var data;
+                try { data = JSON.parse(xhr.responseText); }
+                catch (error) { reject(new Error(tr('invalidResponse', '服务器返回格式错误'))); return; }
+                if (xhr.status < 200 || xhr.status >= 300 || !data || data.code !== 0) {
+                    reject(new Error((data && data.message) || ('HTTP ' + xhr.status)));
+                    return;
+                }
+                resolve(data);
+            };
+            xhr.onerror = function () { reject(new Error(tr('networkError', '网络请求失败'))); };
+            xhr.ontimeout = function () { reject(new Error(tr('requestTimeout', '请求超时'))); };
+            xhr.send(form);
+        });
+    }
+    function uploadFrameworkChunks(file, token, chunkSize) {
+        var offset = 0;
+        var sequence = 0;
+        function next() {
+            if (offset >= file.size) return Promise.resolve();
+            var end = Math.min(offset + chunkSize, file.size);
+            var blob = file.slice(offset, end);
+            return uploadFrameworkChunk(token, sequence, blob).then(function () {
+                offset = end;
+                sequence += 1;
+                return next();
+            });
+        }
+        return next();
+    }
+
     byId('mwef-save-settings').onclick = function () {
         setMessage(tr('applying', '正在保存并重新 patch…'));
         request('settings', 'POST', {
@@ -299,6 +452,10 @@
     };
     byId('mwef-choose-package').onclick = function () { byId('mwef-package').click(); };
     byId('mwef-package').onchange = function () { uploadPackage(this.files && this.files[0]); this.value = ''; };
+    byId('mwef-check-update').onclick = function () { checkFrameworkUpdate(true).catch(function () {}); };
+    byId('mwef-online-update').onclick = startOnlineUpdate;
+    byId('mwef-choose-framework-package').onclick = function () { byId('mwef-framework-package').click(); };
+    byId('mwef-framework-package').onchange = function () { uploadFrameworkRelease(this.files && this.files[0]); this.value = ''; };
     byId('mwef-modal-close').onclick = closeModal;
     byId('mwef-modal-cancel').onclick = closeModal;
     byId('mwef-modal-confirm').onclick = confirmModal;

@@ -19,7 +19,15 @@ MWEF provides an auditable and reversible plugin installation and runtime mechan
 
 The repository-root `install.sh` downloads a pinned release archive into `/tmp`, verifies its embedded SHA-256, rejects unsafe tar paths, and rejects links or special files after extracting into a temporary staging directory under `/data/other_vol`. Only then are framework files copied into `/data/other_vol/xqext` and the local framework installer invoked.
 
-GitHub mirrors are optional transport prefixes. They do not disable archive verification. TLS certificate checks are enabled by default; legacy clients must explicitly set `MWEF_INSECURE=1`, and SHA-256 verification remains mandatory in that mode.
+GitHub mirrors are optional transport prefixes. They do not disable archive verification. The router-oriented README commands explicitly use `curl -k` and `MWEF_INSECURE=1` for firmware builds whose certificate chain cannot be validated; SHA-256 verification remains mandatory in that mode. This does not authenticate the installer itself: a man-in-the-middle able to replace `install.sh` could also replace its embedded checksum, so insecure transport must be limited to a trusted network.
+
+## Framework Self-update
+
+Framework Settings accepts either the release selected by the official update index or an administrator-uploaded framework archive. Archives are limited to 16 MiB and extracted into a private staging directory on `/data/other_vol`. Browser uploads are serialized into 32 KiB chunks to stay below the Xiaomi Web service request limit; the server records the expected total, rejects out-of-order or oversized chunks, and validates the fully reconstructed archive. The updater allowlists framework paths, rejects traversal, links, and special files, requires the core API/UI/install/update files, and verifies the framework id and `VlHash` author field. Online downloads must match both the byte size and SHA-256 declared by the update index. Uploaded releases are locally hashed and shown only after validation.
+
+The updater serializes framework and plugin transactions, stops only the MWEF OverlayFS mounts, and renames the installed framework into `/data/other_vol/xqext-framework-recovery/` before activating the staged tree. Configuration and plugins are transferred to the new tree. If installation or repatching fails, the new tree is retained as a failed recovery copy and the previous framework is restored and started again. No MTD, block device, firmware partition, or read-only SquashFS write is involved.
+
+The current Xiaomi-router compatibility mode uses `curl -k` for the online index and archive. The index SHA-256 protects against corruption and mismatched mirrors, but it does not authenticate an index obtained over unauthenticated TLS; an active man-in-the-middle could replace both metadata and payload. Use online update only on a trusted network. Uploading a release obtained and verified on another machine avoids router-side network transport, but the administrator remains responsible for the uploaded file's provenance.
 
 ## Permission Model
 
@@ -39,5 +47,6 @@ MWEF 0.2.x does not claim to provide a mandatory sandbox based on Linux namespac
 
 - Plugin removal moves the plugin into the installation directory's `.recovery/` folder.
 - A failed plugin upgrade restores the previous version and runs the patch process again.
+- A failed framework self-update restores the previous framework; successful updates retain the old core tree in `/data/other_vol/xqext-framework-recovery/`.
 - Framework uninstallation detaches the mounts, removes the startup entry, and renames `/data/other_vol/xqext` for recovery.
 - The original SquashFS files under `/www` and `/usr/lib/lua/luci` are never modified.

@@ -1,4 +1,5 @@
 dist/
+dist-unix/
 *.tmp
 .DS_Store
 Thumbs.db
