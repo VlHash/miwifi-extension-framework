@@ -9,7 +9,11 @@
 - 索引：`https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.json`
 - Schema：`https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.schema.json`
 
-在首个经过审查的在线插件包发布前，软件源暂时保持为空。内置插件随框架发布，不在该索引中重复列出。
+内置插件随框架发布，不在该索引中重复列出。
+
+## 可用插件
+
+- **NekoCoffee 1.1.0** — 符合小米原生 WebUI 风格的轻量 Neko 流量伴侣面板。索引记录了固定版本归档、精确大小和 SHA-256 校验值。
 
 ## 发布要求
 

@@ -9,7 +9,11 @@ This branch publishes the machine-readable catalog used by the future MWEF Packa
 - Index: `https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.json`
 - Schema: `https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.schema.json`
 
-The catalog is intentionally empty until the first reviewed online plugin package is available. Built-in plugins are shipped with the framework and are not listed here.
+Built-in plugins are shipped with the framework and are not listed here.
+
+## Available Plugins
+
+- **NekoCoffee 1.1.0** — A lightweight Xiaomi WebUI-style panel for a local neko traffic companion. The catalog records its immutable release archive, exact size, and SHA-256 checksum.
 
 ## Publishing Requirements
 
