@@ -13,6 +13,7 @@ local SOURCE_DIRECTORY = BASE .. "/config/mwef-lib-packmanager"
 local SOURCE_FILE = SOURCE_DIRECTORY .. "/sources.json"
 local CORE_HELPER = BASE .. "/scripts/mwef-pluginctl.sh"
 local DEFAULT_INDEX_URL = "https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.json"
+local FALLBACK_INDEX_URL = "https://cdn.jsdelivr.net/gh/VlHash/miwifi-extension-framework@plugins/index.json"
 local DEFAULT_GITHUB_PROXY = ""
 local INDEX_SCHEMA_URL = "https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.schema.json"
 local MAX_ARCHIVE_SIZE = 8 * 1024 * 1024
@@ -337,7 +338,12 @@ end
 local function load_index(index_url, token)
     local path = "/tmp/mwef-packmanager-index-" .. token .. ".json"
     os.remove(path)
-    if not run_pack_helper(token, "fetch-index", index_url, token) then
+    local downloaded = run_pack_helper(token, "fetch-index", index_url, token)
+    if not downloaded and index_url == DEFAULT_INDEX_URL then
+        os.remove(path)
+        downloaded = run_pack_helper(token, "fetch-index", FALLBACK_INDEX_URL, token)
+    end
+    if not downloaded then
         local message = helper_error(pack_log(token), "Unable to download the plugin index")
         os.remove(path)
         os.remove(pack_log(token))

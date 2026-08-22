@@ -3,6 +3,43 @@
   "schemaVersion": 1,
   "name": "MWEF Official Plugin Index",
   "maintainer": "VlHash",
-  "updated": "2026-08-22",
-  "plugins": []
+  "updated": "2026-08-23",
+  "plugins": [
+    {
+      "id": "mwef-app-nekocoffee",
+      "name": {
+        "en": "NekoCoffee",
+        "zh-CN": "NekoCoffee"
+      },
+      "description": {
+        "en": "A lightweight Xiaomi WebUI-style panel for a local neko traffic companion.",
+        "zh-CN": "符合小米原生 WebUI 风格的轻量 Neko 流量伴侣面板。"
+      },
+      "version": "1.1.0",
+      "author": "VlHash",
+      "license": "MIT",
+      "mwef": ">=0.2.0",
+      "permissions": [
+        "system.read",
+        "filesystem.read",
+        "filesystem.write",
+        "network.client",
+        "service.control",
+        "shell.execute"
+      ],
+      "archive": {
+        "url": "https://github.com/VlHash/mwef-app-nekocoffee/releases/download/v1.1.0/mwef-app-nekocoffee-1.1.0.tar.gz",
+        "sha256": "1dd98c3e6d6e816518eb89b58b5e3ea60476c8ad4192c3783c4ed41a1fe34028",
+        "size": 26400
+      },
+      "homepage": "https://github.com/VlHash/mwef-app-nekocoffee",
+      "source": "https://github.com/VlHash/mwef-app-nekocoffee/tree/v1.1.0",
+      "published": "2026-08-23",
+      "changelog": "https://github.com/VlHash/mwef-app-nekocoffee/releases/tag/v1.1.0",
+      "categories": [
+        "network",
+        "utilities"
+      ]
+    }
+  ]
 }

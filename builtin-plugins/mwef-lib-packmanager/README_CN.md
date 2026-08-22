@@ -9,7 +9,7 @@ MWEF 内置在线插件管理器。页面入口为“扩展设置 → 插件管�
 - 在线包下载后强制核对索引声明的精确字节数和 SHA-256。
 - 继续复用框架的安全路径检查、解包检查、权限确认、事务安装、升级备份和失败回滚。
 - 使用小米 WebUI 风格弹窗设置插件列表地址和 GitHub 镜像/代理前缀。
-- 默认提供 GitHub Raw、jsDelivr 索引和 `ghfast.top` GitHub 下载代理预设，也可填写自定义 HTTPS 地址。
+- 默认提供 GitHub Raw、jsDelivr 索引和 `ghfast.top` GitHub 下载代理预设，也可填写自定义 HTTPS 地址；路由器侧 GitHub Raw 边缘节点异常时，官方源会自动回退到 jsDelivr。
 
 ## 持久化配置
 

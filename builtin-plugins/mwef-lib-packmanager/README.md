@@ -9,7 +9,7 @@ The built-in online package manager for MWEF. Open it from **Extensions → Pack
 - Enforces the exact byte length and SHA-256 declared by the index.
 - Reuses the framework's archive-path checks, extraction checks, permission review, transactional install, upgrade backup, and failure rollback.
 - Uses a Xiaomi WebUI-style dialog for the plugin index and GitHub mirror/proxy prefix.
-- Provides GitHub Raw, jsDelivr, and `ghfast.top` presets, while allowing custom HTTPS sources.
+- Provides GitHub Raw, jsDelivr, and `ghfast.top` presets, while allowing custom HTTPS sources. The official Raw source automatically falls back to jsDelivr when the router-side GitHub edge is stale or unavailable.
 
 ## Persistent settings
 
