@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/framework.schema.json",
+  "title": "MWEF Framework Update Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "framework",
+    "author",
+    "channel",
+    "version",
+    "tag",
+    "publishedAt",
+    "notesUrl",
+    "archive"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/framework.schema.json"
+    },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "framework": { "type": "string", "const": "mwef" },
+    "author": { "type": "string", "const": "VlHash" },
+    "channel": { "type": "string", "enum": ["pre-release", "stable"] },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[0-9A-Za-z.-]*$", "maxLength": 32 },
+    "tag": { "type": "string", "pattern": "^v[0-9A-Za-z.-]+$", "maxLength": 48 },
+    "publishedAt": { "type": "string", "format": "date-time" },
+    "notesUrl": {
+      "type": "string",
+      "pattern": "^https://github\\.com/VlHash/miwifi-extension-framework/releases/tag/v[0-9A-Za-z.-]+$",
+      "maxLength": 360
+    },
+    "archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "size", "sha256", "urls"],
+      "properties": {
+        "filename": { "type": "string", "pattern": "^mwef-[0-9A-Za-z.-]+\\.tar\\.gz$", "maxLength": 80 },
+        "size": { "type": "integer", "minimum": 1, "maximum": 16777216 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "urls": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^https://\\S+$", "maxLength": 360 }
+        }
+      }
+    }
+  }
+}

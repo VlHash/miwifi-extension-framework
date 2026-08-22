@@ -23,6 +23,9 @@ jobs:
             $null = Get-Content -Raw -LiteralPath $_.FullName | ConvertFrom-Json
           }
 
+      - name: Validate plugin index
+        run: node tools/validate-plugin-index.js
+
       - name: Validate JavaScript
         run: |
           node --check router-overlay/www-upper/xqext/framework.js
