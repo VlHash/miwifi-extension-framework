@@ -4,19 +4,21 @@
 
 MWEF is an extensible plugin framework for the native Xiaomi router WebUI. It preserves the legacy `xqext` routes, static-resource prefixes, and persistent directory layout so existing installations can be upgraded in place.
 
-The built-in `system` plugin provides a system overview and has been verified on the Xiaomi Router BE6500 Pro (`ipq53xx/generic`).
+The built-in `system` plugin provides a system overview, while `mwef-lib-packmanager` provides the online package catalog and installer. The framework has been verified on the Xiaomi Router BE6500 Pro (`ipq53xx/generic`).
 
 ## Features
 
-- A native top-level **Extensions** entry containing **System Information** and **Framework Settings**
+- A native top-level **Extensions** entry containing **System Information**, **Packages**, and **Framework Settings**
 - Simplified Chinese and English UI languages, with a localization convention for plugins
 - `.tar.gz` plugin upload, pre-install validation, permission confirmation, enable/disable controls, grant management, and recoverable removal
 - A configurable plugin installation directory under `/data`; existing plugins are copied during migration and the previous directory is retained for recovery
 - Automatic plugin-overlay merging and WebUI repatching without modifying the read-only SquashFS
 - Built-in system information plugin with dynamically detected model/platform/kernel/firmware data, CPU and RAM charts, expandable mean-temperature details, and writable-partition usage
+- Built-in online package manager that reads the `plugins` branch index, filters available/installed/update packages, verifies size and SHA-256, and then enters the existing permission and transactional installation flow
+- Xiaomi-style source settings dialog for GitHub Raw, jsDelivr, a GitHub download proxy, or a custom HTTPS index
 - A GitHub Contributors bar on the Framework Settings page, with a local fallback when GitHub is unavailable
 - Framework Settings can check the official update index, install a verified online release, or validate and install an uploaded framework release package
-- A versioned official plugin index on the `plugins` branch for future online package management
+- A versioned official plugin index on the `plugins` branch for online installation
 - Compatibility with the existing `xqext` paths: `/data/other_vol/xqext`, `/xqext`, and `/web/xqext`
 
 ## Safety Boundary
@@ -40,7 +42,7 @@ On Windows PowerShell:
 ./scripts/build.ps1
 ```
 
-Both build methods produce `dist/mwef-0.2.5.tar.gz` with the same package layout.
+Both build methods produce `dist/mwef-0.3.0.tar.gz` with the same package layout.
 
 ## Install or Upgrade
 

@@ -3,10 +3,10 @@
 set -eu
 umask 077
 
-MWEF_VERSION=${MWEF_VERSION:-0.2.5}
-MWEF_TAG=${MWEF_TAG:-v0.2.5-pre.1}
+MWEF_VERSION=${MWEF_VERSION:-0.3.0}
+MWEF_TAG=${MWEF_TAG:-v0.3.0-pre.1}
 MWEF_ASSET=${MWEF_ASSET:-mwef-$MWEF_VERSION.tar.gz}
-MWEF_SHA256=${MWEF_SHA256:-0189C6F9F9AF0B61AC12EA4EAE08A719926FCDFBCB792E338D8FC58A2C62A932}
+MWEF_SHA256=${MWEF_SHA256:-6E4695A69F461F1A93C6D0E28EB493B25204EDA4ECC7D5380040B4CB9F579FEB}
 MWEF_BASE=/data/other_vol/xqext
 MWEF_RELEASE_BASE=${MWEF_RELEASE_BASE:-https://github.com/VlHash/miwifi-extension-framework/releases/download}
 MWEF_DOWNLOAD_URL=${MWEF_DOWNLOAD_URL:-$MWEF_RELEASE_BASE/$MWEF_TAG/$MWEF_ASSET}
@@ -137,7 +137,12 @@ validate_staging
 
 mkdir -p "$MWEF_BASE"
 cp -a "$STAGING/." "$MWEF_BASE/" || fail "cannot copy MWEF into persistent storage"
-chmod 755 "$MWEF_BASE/scripts/install.sh"
+chmod 755 \
+    "$MWEF_BASE/scripts/install.sh" \
+    "$MWEF_BASE/scripts/xqext-init.sh" \
+    "$MWEF_BASE/scripts/mwef-pluginctl.sh" \
+    "$MWEF_BASE/scripts/mwef-update.sh" \
+    "$MWEF_BASE/scripts/uninstall.sh"
 
 say "Installing MWEF into $MWEF_BASE"
 "$MWEF_BASE/scripts/install.sh" || fail "framework installation failed"

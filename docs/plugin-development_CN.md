@@ -2,7 +2,7 @@
 
 [English](plugin-development.md) | **简体中文**
 
-本文定义 MWEF 0.2.x 插件包格式。插件作者字段示例统一使用 `VlHash`。
+本文定义 MWEF 0.3.x 插件包格式。插件作者字段示例统一使用 `VlHash`。
 
 ## 1. 包格式
 

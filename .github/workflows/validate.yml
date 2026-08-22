@@ -27,6 +27,7 @@ jobs:
         run: |
           node --check router-overlay/www-upper/xqext/framework.js
           node --check builtin-plugins/system/overlay/www/xqext/plugins/system/system.js
+          node --check builtin-plugins/mwef-lib-packmanager/overlay/www/xqext/plugins/mwef-lib-packmanager/packmanager.js
 
       - name: Validate Lua
         run: find router-overlay builtin-plugins examples -type f -name '*.lua' -exec luac5.1 -p {} \;
@@ -35,10 +36,79 @@ jobs:
         run: |
           sh -n build.sh install.sh
           find scripts -type f -name '*.sh' -exec sh -n {} \;
+          find builtin-plugins -path '*/scripts/*.sh' -exec sh -n {} \;
+
+      - name: Validate built-in plugin registration
+        shell: pwsh
+        run: |
+          $framework = Get-Content -Raw manifest.json | ConvertFrom-Json
+          $installer = Get-Content -Raw scripts/install.sh
+          foreach ($id in $framework.builtinPlugins) {
+            $root = Join-Path builtin-plugins $id
+            if (-not (Test-Path -LiteralPath $root -PathType Container)) { throw "Missing built-in plugin directory: $id" }
+            $plugin = Get-Content -Raw (Join-Path $root mwef-plugin.json) | ConvertFrom-Json
+            if ($plugin.id -ne $id) { throw "Built-in plugin manifest id mismatch: $id" }
+            if ($installer -notmatch ("install_builtin_plugin\s+" + [regex]::Escape($id) + "(?:\s|\\)")) {
+              throw "Built-in plugin is not registered by scripts/install.sh: $id"
+            }
+          }
+
+      - name: Reject reserved plugin state
+        run: |
+          root=$(mktemp -d)
+          token="$(date +%s)-abcdef12"
+          mkdir -p "$root/package"
+          cp examples/hello-mwef/mwef-plugin.json "$root/package/mwef-plugin.json"
+          touch "$root/package/.builtin"
+          tar -czf "/tmp/mwef-upload-$token.tar.gz" -C "$root/package" mwef-plugin.json .builtin
+          if sh scripts/mwef-pluginctl.sh inspect "/tmp/mwef-upload-$token.tar.gz" "$token"; then
+            echo "reserved .builtin file was accepted" >&2
+            exit 1
+          fi
+          test ! -e "/tmp/mwef-pending-$token"
+          rm -rf "$root"
+
+      - name: Reject oversized expanded plugin packages
+        run: |
+          root=$(mktemp -d)
+          token="$(date +%s)-abcdef13"
+          mkdir -p "$root/package"
+          cp examples/hello-mwef/mwef-plugin.json "$root/package/mwef-plugin.json"
+          dd if=/dev/zero of="$root/package/padding.bin" bs=1048576 count=65 status=none
+          tar -czf "/tmp/mwef-upload-$token.tar.gz" -C "$root/package" .
+          if sh scripts/mwef-pluginctl.sh inspect "/tmp/mwef-upload-$token.tar.gz" "$token"; then
+            echo "package expanding past 64 MiB was accepted" >&2
+            exit 1
+          fi
+          test ! -e "/tmp/mwef-pending-$token"
+          rm -rf "$root"
+
+      - name: Reject framework LuCI path conflicts at install time
+        run: |
+          token="$(date +%s)-abcdef14"
+          base=/data/other_vol/xqext
+          sudo mkdir -p "$base/scripts" "$base/router-overlay/luci-upper/controller/api" "$base/plugins"
+          sudo chown -R "$USER":"$(id -gn)" /data/other_vol
+          printf '#!/bin/sh\nexit 0\n' > "$base/scripts/xqext-init.sh"
+          chmod 755 "$base/scripts/xqext-init.sh"
+          touch "$base/router-overlay/luci-upper/controller/api/conflict.lua"
+          mkdir -p "/tmp/mwef-pending-$token/overlay/luci/controller/api"
+          cp examples/hello-mwef/mwef-plugin.json "/tmp/mwef-pending-$token/mwef-plugin.json"
+          touch "/tmp/mwef-pending-$token/overlay/luci/controller/api/conflict.lua"
+          if sh scripts/mwef-pluginctl.sh install "$token" "$base/plugins" hello-mwef ''; then
+            echo "framework LuCI path conflict was accepted" >&2
+            exit 1
+          fi
+          test ! -e "$base/plugins/hello-mwef"
+          rm -rf "/tmp/mwef-pending-$token" /data/other_vol/xqext
 
       - name: Build example plugin
         shell: pwsh
         run: ./tools/build-plugin.ps1 -Source examples/hello-mwef
+
+      - name: Build package manager plugin
+        shell: pwsh
+        run: ./tools/build-plugin.ps1 -Source builtin-plugins/mwef-lib-packmanager
 
       - name: Build MWEF
         shell: pwsh

@@ -5,7 +5,7 @@ local http = require "luci.http"
 local json = require "luci.json"
 
 local BASE = "/data/other_vol/xqext"
-local VERSION = "0.2.5"
+local VERSION = "0.3.0"
 local DEFAULT_PLUGIN_DIR = BASE .. "/plugins"
 local LANGUAGE_FILE = BASE .. "/config/language"
 local PLUGIN_DIR_FILE = BASE .. "/config/plugin-directory"
@@ -134,6 +134,7 @@ end
 local function plugin_record(path, id, language)
     local manifest = decode_json(path .. "/mwef-plugin.json")
     if type(manifest) ~= "table" or manifest.id ~= id then return nil end
+    local builtin_marker = fs.stat(path .. "/.builtin")
     return {
         id = id,
         name = localized_name(manifest, language),
@@ -143,7 +144,7 @@ local function plugin_record(path, id, language)
             or manifest.description,
         author = manifest.author,
         enabled = fs.stat(path .. "/.enabled") ~= nil,
-        builtin = fs.stat(path .. "/.builtin") ~= nil,
+        builtin = builtin_marker and builtin_marker.type == "reg" or false,
         permissions = type(manifest.permissions) == "table" and manifest.permissions or {},
         grants = read_lines(path .. "/.grants")
     }
@@ -310,6 +311,41 @@ local function validate_pending_layout(root, manifest)
     return true
 end
 
+local function collect_relative_files(root, relative, result)
+    local directory = relative == "" and root or (root .. "/" .. relative)
+    local iterator = fs.dir(directory)
+    if not iterator then return end
+    for name in iterator do
+        local child_relative = relative == "" and name or (relative .. "/" .. name)
+        local stat = fs.stat(root .. "/" .. child_relative)
+        if stat and stat.type == "dir" then
+            collect_relative_files(root, child_relative, result)
+        elseif stat and stat.type == "reg" then
+            result[child_relative] = true
+        end
+    end
+end
+
+local function validate_luci_conflicts(root, manifest, current)
+    local pending_files = {}
+    collect_relative_files(root .. "/overlay/luci", "", pending_files)
+    if not next(pending_files) then return true end
+    local iterator = fs.dir(current.pluginDirectory)
+    if not iterator then return true end
+    for id in iterator do
+        if id ~= manifest.id and valid_plugin_id(id) then
+            local installed_files = {}
+            collect_relative_files(current.pluginDirectory .. "/" .. id .. "/overlay/luci", "", installed_files)
+            for relative in pairs(pending_files) do
+                if installed_files[relative] then
+                    return false, "Plugin LuCI path conflicts with " .. id .. ": overlay/luci/" .. relative
+                end
+            end
+        end
+    end
+    return true
+end
+
 local function random_token()
     local random_handle = io.open("/dev/urandom", "rb")
     local random = random_handle and random_handle:read(8) or nil
@@ -384,6 +420,11 @@ local function handle_upload()
         return respond({ code = 400, message = layout_message }, 400)
     end
     local current = settings()
+    local conflicts_ok, conflicts_message = validate_luci_conflicts("/tmp/mwef-pending-" .. token, manifest, current)
+    if not conflicts_ok then
+        run_helper("discard", token)
+        return respond({ code = 400, message = conflicts_message }, 400)
+    end
     respond({
         code = 0,
         pendingToken = token,
@@ -673,9 +714,22 @@ local function handle_install()
     local manifest, message = validate_manifest(decode_json("/tmp/mwef-pending-" .. token .. "/mwef-plugin.json"))
     if not manifest then return respond({ code = 400, message = message or "Pending package expired" }, 400) end
     local layout_ok, layout_message = validate_pending_layout("/tmp/mwef-pending-" .. token, manifest)
-    if not layout_ok then return respond({ code = 400, message = layout_message }, 400) end
+    if not layout_ok then
+        run_helper("discard", token)
+        return respond({ code = 400, message = layout_message }, 400)
+    end
     local grants = requested_grants(http.formvalue("grants"), manifest.permissions)
     local current = settings()
+    local conflicts_ok, conflicts_message = validate_luci_conflicts("/tmp/mwef-pending-" .. token, manifest, current)
+    if not conflicts_ok then
+        run_helper("discard", token)
+        return respond({ code = 400, message = conflicts_message }, 400)
+    end
+    local installed = plugin_record(current.pluginDirectory .. "/" .. manifest.id, manifest.id, current.language)
+    if installed and installed.builtin then
+        run_helper("discard", token)
+        return respond({ code = 400, message = "Built-in plugins are updated with the framework" }, 400)
+    end
     if not run_helper("install", token, current.pluginDirectory, manifest.id, table.concat(grants, ",")) then
         return respond({ code = 500, message = trim(read_file("/tmp/mwef-helper.log")) or "Install failed" }, 500)
     end
@@ -703,12 +757,12 @@ local function handle_plugin_action(action)
     if not is_post() then return respond({ code = 405, message = "POST required" }, 400) end
     local id = http.formvalue("id") or ""
     if not valid_plugin_id(id) then return respond({ code = 400, message = "Invalid plugin id" }, 400) end
-    if id == "system" and (action == "disable" or action == "remove") then
-        return respond({ code = 400, message = "The built-in system plugin cannot be disabled or removed" }, 400)
-    end
     local current = settings()
     local plugin = plugin_record(current.pluginDirectory .. "/" .. id, id, current.language)
     if not plugin then return respond({ code = 400, message = "Plugin not found" }, 400) end
+    if plugin.builtin and (action == "disable" or action == "remove") then
+        return respond({ code = 400, message = "Built-in plugins cannot be disabled or removed" }, 400)
+    end
     local argument = ""
     if action == "permissions" then
         argument = table.concat(requested_grants(http.formvalue("grants"), plugin.permissions), ",")

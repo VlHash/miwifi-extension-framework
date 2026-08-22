@@ -3,7 +3,7 @@
   "legacyId": "xqext",
   "name": "MiWiFi-Extension-Framework",
   "shortName": "MWEF",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "author": "VlHash",
   "license": "MIT",
   "target": "Xiaomi Router WebUI",
@@ -14,7 +14,7 @@
     "webPrefix": "/xqext",
     "luciRoute": "/web/xqext"
   },
-  "builtinPlugins": ["system"],
+  "builtinPlugins": ["system", "mwef-lib-packmanager"],
   "defaultPluginDirectory": "/data/other_vol/xqext/plugins",
   "mountStrategy": "generated-overlayfs+bind",
   "bootHook": "firewall.xqext"

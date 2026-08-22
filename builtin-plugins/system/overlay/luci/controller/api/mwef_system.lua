@@ -4,7 +4,7 @@ local fs = require "nixio.fs"
 local http = require "luci.http"
 local json = require "luci.json"
 
-local VERSION = "0.2.5"
+local VERSION = "0.3.0"
 
 local function read_file(path, binary)
     local handle = io.open(path, binary and "rb" or "r")

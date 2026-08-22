@@ -4,8 +4,7 @@ set -u
 
 BASE="/data/other_vol/xqext"
 DATA_ROOT="/data/other_vol"
-PLUGIN_LOCK="$BASE/runtime/pluginctl.lock"
-UPDATE_LOCK="/tmp/mwef-framework-update.lock"
+UPDATE_LOCK="/tmp/mwef-transaction.lock"
 MANIFEST_FILE="/tmp/mwef-framework-update.json"
 MAX_ARCHIVE_SIZE=16777216
 MAX_MANIFEST_SIZE=65536
@@ -56,14 +55,6 @@ file_sha256() {
 
 acquire_lock() {
     local owner
-    if [ -d "$PLUGIN_LOCK" ]; then
-        owner="$(cat "$PLUGIN_LOCK/pid" 2>/dev/null || true)"
-        if [ -z "$owner" ] || kill -0 "$owner" 2>/dev/null; then
-            fail "a plugin operation is still running"
-        fi
-        rm -f "$PLUGIN_LOCK/pid"
-        rmdir "$PLUGIN_LOCK" 2>/dev/null || fail "cannot clear a stale plugin lock"
-    fi
     if mkdir "$UPDATE_LOCK" 2>/dev/null; then
         :
     else
@@ -72,7 +63,7 @@ acquire_lock() {
             rm -f "$UPDATE_LOCK/pid"
             rmdir "$UPDATE_LOCK" 2>/dev/null || true
         fi
-        mkdir "$UPDATE_LOCK" 2>/dev/null || fail "another framework update is still running"
+        mkdir "$UPDATE_LOCK" 2>/dev/null || fail "another framework or plugin operation is still running"
     fi
     LOCK_HELD=1
     printf '%s\n' "$$" > "$UPDATE_LOCK/pid" || fail "cannot record the update lock"

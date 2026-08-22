@@ -4,19 +4,21 @@
 
 MWEF 是面向小米路由器原生 WebUI 的可扩展插件框架。项目保留早期 `xqext` 的路由、静态资源前缀和持久化目录，因此可从现有安装平滑升级。
 
-当前内置 `system` 系统信息插件，已在 Xiaomi Router BE6500 Pro（`ipq53xx/generic`）上验证。
+当前内置 `system` 系统信息插件和 `mwef-lib-packmanager` 在线插件管理器；框架已在 Xiaomi Router BE6500 Pro（`ipq53xx/generic`）上验证。
 
 ## 功能
 
-- 原生一级入口“扩展设置”，内含“系统信息”和“框架设置”
+- 原生一级入口“扩展设置”，内含“系统信息”“插件管理”和“框架设置”
 - 中文（简体）/ English 语言切换及插件语言包约定
 - `.tar.gz` 插件上传、安装前检查、权限确认、启用/停用、权限调整和可恢复移除
 - 可配置 `/data` 下的插件安装目录；迁移时复制现有插件并保留旧目录
 - 插件 Overlay 自动合并并重新 patch，无需修改只读 SquashFS
 - 内置系统信息插件：动态机型/平台/内核/固件、CPU/RAM 图表、平均温度折叠详情、可写分区统计
+- 内置在线插件管理器：读取 `plugins` 分支索引，筛选可安装/已安装/可更新插件，验证大小与 SHA-256 后进入权限确认和事务安装
+- 小米 WebUI 弹窗式软件源设置：可切换 GitHub Raw、jsDelivr、GitHub 下载代理或自定义 HTTPS 索引
 - 框架设置页面底部展示 GitHub Contributors；GitHub 不可访问时使用本地回退内容
 - 框架设置支持检查官方更新索引、安装已验证的在线 Release，或上传并验证框架 Release 包
-- `plugins` 分支提供版本化官方插件索引，为后续在线软件包管理做准备
+- `plugins` 分支提供版本化官方插件索引，供内置插件管理器在线安装
 - `xqext` 兼容路径：`/data/other_vol/xqext`、`/xqext`、`/web/xqext`
 
 ## 安全边界
@@ -40,7 +42,7 @@ Windows PowerShell：
 ./scripts/build.ps1
 ```
 
-两种方式均会生成包结构相同的 `dist/mwef-0.2.5.tar.gz`。
+两种方式均会生成包结构相同的 `dist/mwef-0.3.0.tar.gz`。
 
 ## 安装/升级
 

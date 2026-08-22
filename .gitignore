@@ -1,5 +1,6 @@
 dist/
 dist-unix/
+.qa/
 *.tmp
 .DS_Store
 Thumbs.db

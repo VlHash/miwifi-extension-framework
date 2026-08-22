@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "mwef-lib-packmanager",
+  "name": {
+    "zh-CN": "插件管理器",
+    "en": "Package Manager"
+  },
+  "version": "1.0.0",
+  "description": {
+    "zh-CN": "MWEF 内置的在线插件目录、安装、升级和软件源管理器。",
+    "en": "Built-in online catalog, installer, updater and source manager for MWEF plugins."
+  },
+  "author": "VlHash",
+  "license": "MIT",
+  "mwef": ">=0.3.0",
+  "permissions": [
+    "filesystem.read",
+    "filesystem.write",
+    "network.client",
+    "shell.execute"
+  ],
+  "entrypoints": {
+    "web": "/web/xqext/packmanager",
+    "api": "/web/xqextpackmanager"
+  },
+  "navigation": {
+    "label": {
+      "zh-CN": "插件管理",
+      "en": "Packages"
+    },
+    "route": ["web", "xqext", "packmanager"],
+    "order": 20
+  }
+}

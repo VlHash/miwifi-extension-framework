@@ -8,7 +8,7 @@ The official online plugin index is published from the repository's `plugins` br
 https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.json
 ```
 
-This index is intended for a future Package plugin. It is metadata only and does not grant permissions or execute plugin code.
+This index is consumed by the built-in `mwef-lib-packmanager`. It is metadata only and does not grant permissions or execute plugin code.
 
 ## Top-level Format
 

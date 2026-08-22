@@ -8,11 +8,11 @@ MWEF provides an auditable and reversible plugin installation and runtime mechan
 
 ## Installation Boundary
 
-1. Uploaded packages are written only to `/tmp` and are limited to 8 MiB.
-2. Every tar path is checked before extraction; absolute paths, path traversal, and backslash-separated paths are rejected.
-3. Symbolic links and special files are rejected after extraction.
+1. Uploaded packages are written only to `/tmp`; compressed archives are limited to 8 MiB, the expanded tar stream to 64 MiB, and the archive to 2,048 entries.
+2. Every tar path and type is checked before extraction; absolute paths, path traversal, backslash-separated paths, links, special files, and reserved framework state files are rejected.
+3. Symbolic links and special files are rejected again after extraction, and LuCI paths are checked for conflicts with other plugins.
 4. Permission confirmation is shown only after the manifest passes Schema v1 validation.
-5. Installation uses a staging directory on the same filesystem; the previous version is moved into `.recovery` before an upgrade.
+5. Installation uses a staging directory on the same filesystem; the previous version is moved into `.recovery` before an upgrade. Plugin and framework updates share one atomic transaction lock.
 6. Enabling or disabling a plugin rebuilds the generated layers and remounts OverlayFS.
 
 ## One-click Framework Installer
@@ -29,11 +29,19 @@ The updater serializes framework and plugin transactions, stops only the MWEF Ov
 
 The current Xiaomi-router compatibility mode uses `curl -k` for the online index and archive. The index SHA-256 protects against corruption and mismatched mirrors, but it does not authenticate an index obtained over unauthenticated TLS; an active man-in-the-middle could replace both metadata and payload. Use online update only on a trusted network. Uploading a release obtained and verified on another machine avoids router-side network transport, but the administrator remains responsible for the uploaded file's provenance.
 
+## Online Package Management
+
+The built-in `mwef-lib-packmanager` accepts only a plugin ID from the browser, never a browser-supplied archive URL, length, or hash. Before each install, the router fetches the index again, validates the Index Schema v1 boundaries, and selects an HTTPS archive from the server-side validated record. A GitHub proxy is applied only as a transport prefix for GitHub, Raw, and codeload URLs. The archive must match the exact indexed byte length and SHA-256, pass the core plugin inspector, and then match the indexed ID, version, author, compatibility requirement, and permissions. The existing transactional install and rollback flow starts only after administrator permission review.
+
+Source settings are written atomically below the persistent framework `config` directory. A new source is fetched and validated before it is saved. A custom source can still publish code that runs with LuCI privileges; unsigned-index and `curl -k` authentication limitations are the same as framework self-update, so use only trusted sources and networks.
+
 ## Permission Model
 
 The manifest `permissions` array is the requested set, while `.grants` stores the set approved by the administrator. The controlled MWEF hook runner checks for `shell.execute` before running a script. Approved permissions can be added or revoked at any time from the plugin-management page.
 
-MWEF 0.2.x does not claim to provide a mandatory sandbox based on Linux namespaces, seccomp, or separate Unix users. LuCI controllers normally inherit the Web service's privileges, so source review remains part of the security boundary. A plugin should be rejected if it uses undeclared permissions, invokes shell commands directly, overwrites authentication code, or escapes its own directory.
+Trusted built-in components shipped with the framework and listed in `manifest.json.builtinPlugins` are part of the framework itself. They are pre-authorized from their manifests during framework installation and marked as non-disableable and non-removable; their source is reviewed with the framework release. Online and locally uploaded third-party plugins do not receive this exception and still require per-permission review. An administrator can later revoke a built-in component's grant, in which case that feature stops and reports the missing permission.
+
+MWEF 0.3.x does not claim to provide a mandatory sandbox based on Linux namespaces, seccomp, or separate Unix users. LuCI controllers normally inherit the Web service's privileges, so source review remains part of the security boundary. A plugin should be rejected if it uses undeclared permissions, invokes shell commands directly, overwrites authentication code, or escapes its own directory.
 
 ## Shell Rules
 

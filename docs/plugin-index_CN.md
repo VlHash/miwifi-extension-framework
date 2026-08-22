@@ -8,7 +8,7 @@
 https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.json
 ```
 
-该索引供后续 Package 插件读取，只包含元数据，不会授予权限或执行插件代码。
+该索引供内置 `mwef-lib-packmanager` 读取，只包含元数据，不会授予权限或执行插件代码。
 
 ## 顶层格式
 
