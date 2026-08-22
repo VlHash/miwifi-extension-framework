@@ -3,8 +3,10 @@
 var fs = require('fs');
 
 var INDEX_PATH = 'index.json';
+var FRAMEWORK_PATH = 'framework.json';
 var MAX_INDEX_SIZE = 1024 * 1024;
 var EXPECTED_SCHEMA = 'https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.schema.json';
+var EXPECTED_FRAMEWORK_SCHEMA = 'https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/framework.schema.json';
 var PERMISSIONS = {
     'system.read': true,
     'filesystem.read': true,
@@ -105,4 +107,37 @@ if (!Array.isArray(index.plugins) || index.plugins.length > 512) fail('plugins m
 
 var ids = {};
 index.plugins.forEach(function (plugin, position) { validatePlugin(plugin, ids, position); });
-process.stdout.write('MWEF plugin index valid: ' + index.plugins.length + ' plugin(s)\n');
+
+if (fs.statSync(FRAMEWORK_PATH).size > 64 * 1024) fail('framework.json exceeds 64 KiB');
+var framework = JSON.parse(fs.readFileSync(FRAMEWORK_PATH, 'utf8'));
+if (!framework || typeof framework !== 'object' || Array.isArray(framework)) fail('framework.json must contain an object');
+exactKeys(framework, [
+    '$schema', 'schemaVersion', 'framework', 'author', 'channel', 'version', 'tag',
+    'publishedAt', 'notesUrl', 'archive'
+], 'framework index');
+if (framework.$schema !== EXPECTED_FRAMEWORK_SCHEMA) fail('framework index $schema is invalid');
+if (framework.schemaVersion !== 1 || framework.framework !== 'mwef') fail('unsupported framework index');
+if (framework.author !== 'VlHash') fail('framework index author must be VlHash');
+if (framework.channel !== 'pre-release' && framework.channel !== 'stable') fail('framework index channel is invalid');
+if (typeof framework.version !== 'string' || !/^\d+\.\d+\.\d+[0-9A-Za-z.-]*$/.test(framework.version)) fail('framework index version is invalid');
+if (typeof framework.tag !== 'string' || !/^v[0-9A-Za-z.-]+$/.test(framework.tag)) fail('framework index tag is invalid');
+if (typeof framework.publishedAt !== 'string' || Number.isNaN(Date.parse(framework.publishedAt))) fail('framework index publishedAt is invalid');
+httpsUrl(framework.notesUrl, 'framework index notesUrl');
+if (!/^https:\/\/github\.com\/VlHash\/miwifi-extension-framework\/releases\/tag\/v[0-9A-Za-z.-]+$/.test(framework.notesUrl)) fail('framework index notesUrl is untrusted');
+if (!framework.archive || typeof framework.archive !== 'object' || Array.isArray(framework.archive)) fail('framework index archive is invalid');
+exactKeys(framework.archive, ['filename', 'size', 'sha256', 'urls'], 'framework index archive');
+if (framework.archive.filename !== 'mwef-' + framework.version + '.tar.gz') fail('framework archive filename does not match version');
+if (!Number.isInteger(framework.archive.size) || framework.archive.size < 1 || framework.archive.size > 16777216) fail('framework archive size is invalid');
+if (typeof framework.archive.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(framework.archive.sha256)) fail('framework archive SHA-256 is invalid');
+if (!Array.isArray(framework.archive.urls) || framework.archive.urls.length < 1 || framework.archive.urls.length > 4) fail('framework archive URLs are invalid');
+var urlSeen = {};
+framework.archive.urls.forEach(function (url) {
+    httpsUrl(url, 'framework archive URL');
+    var direct = /^https:\/\/github\.com\/VlHash\/miwifi-extension-framework\/releases\/download\/v[0-9A-Za-z.-]+\/mwef-[0-9A-Za-z.-]+\.tar\.gz$/;
+    var mirror = /^https:\/\/ghfast\.top\/https:\/\/github\.com\/VlHash\/miwifi-extension-framework\/releases\/download\/v[0-9A-Za-z.-]+\/mwef-[0-9A-Za-z.-]+\.tar\.gz$/;
+    if (!direct.test(url) && !mirror.test(url)) fail('framework archive URL is untrusted');
+    if (urlSeen[url]) fail('framework archive URL is duplicated');
+    urlSeen[url] = true;
+});
+
+process.stdout.write('MWEF indexes valid: ' + index.plugins.length + ' plugin(s), framework v' + framework.version + '\n');

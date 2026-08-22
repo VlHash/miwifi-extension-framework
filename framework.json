@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/framework.schema.json",
+  "schemaVersion": 1,
+  "framework": "mwef",
+  "author": "VlHash",
+  "channel": "pre-release",
+  "version": "0.2.5",
+  "tag": "v0.2.5-pre.1",
+  "publishedAt": "2026-08-22T08:10:56Z",
+  "notesUrl": "https://github.com/VlHash/miwifi-extension-framework/releases/tag/v0.2.5-pre.1",
+  "archive": {
+    "filename": "mwef-0.2.5.tar.gz",
+    "size": 66360,
+    "sha256": "0189c6f9f9af0b61ac12ea4eae08a719926fcdfbcb792e338d8fc58a2c62a932",
+    "urls": [
+      "https://github.com/VlHash/miwifi-extension-framework/releases/download/v0.2.5-pre.1/mwef-0.2.5.tar.gz",
+      "https://ghfast.top/https://github.com/VlHash/miwifi-extension-framework/releases/download/v0.2.5-pre.1/mwef-0.2.5.tar.gz"
+    ]
+  }
+}
