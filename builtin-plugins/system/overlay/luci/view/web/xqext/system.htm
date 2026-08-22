@@ -12,8 +12,8 @@ local pageTitle = language == "en" and "System Information - Extension Settings"
 <meta name="viewport" content="width=1200">
 <link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
 <link href="<%=resource%>/web/css/layout.css?v=<%=ver%>" rel="stylesheet">
-<link href="/xqext/core.css?v=0.2.4" rel="stylesheet">
-<link href="/xqext/plugins/system/system.css?v=0.2.4" rel="stylesheet">
+<link href="/xqext/core.css?v=0.2.5" rel="stylesheet">
+<link href="/xqext/plugins/system/system.css?v=0.2.5" rel="stylesheet">
 </head>
 <body>
 <div id="doc">
@@ -88,11 +88,11 @@ local pageTitle = language == "en" and "System Information - Extension Settings"
 <script>
 window.XQEXT_CONFIG = {
     apiUrl: <%=json.encode(apiUrl)%>,
-    i18nUrl: <%=json.encode("/xqext/plugins/system/i18n/" .. language .. ".json?v=0.2.4")%>,
+    i18nUrl: <%=json.encode("/xqext/plugins/system/i18n/" .. language .. ".json?v=0.2.5")%>,
     interval: 2000,
     points: 60
 };
 </script>
-<script src="/xqext/plugins/system/system.js?v=0.2.4"></script>
+<script src="/xqext/plugins/system/system.js?v=0.2.5"></script>
 </body>
 </html>

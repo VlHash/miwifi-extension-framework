@@ -15,6 +15,7 @@ The built-in `system` plugin provides a system overview and has been verified on
 - Automatic plugin-overlay merging and WebUI repatching without modifying the read-only SquashFS
 - Built-in system information plugin with dynamically detected model/platform/kernel/firmware data, CPU and RAM charts, expandable mean-temperature details, and writable-partition usage
 - A GitHub Contributors bar on the Framework Settings page, with a local fallback when GitHub is unavailable
+- Framework Settings can check the official update index, install a verified online release, or validate and install an uploaded framework release package
 - A versioned official plugin index on the `plugins` branch for future online package management
 - Compatibility with the existing `xqext` paths: `/data/other_vol/xqext`, `/xqext`, and `/web/xqext`
 
@@ -39,39 +40,36 @@ On Windows PowerShell:
 ./scripts/build.ps1
 ```
 
-Both build methods produce `dist/mwef-0.2.4.tar.gz` with the same package layout.
+Both build methods produce `dist/mwef-0.2.5.tar.gz` with the same package layout.
 
 ## Install or Upgrade
 
 ### One-click installer
 
-Run as `root`. The installer downloads into `/tmp`, verifies the release SHA-256, rejects unsafe archive entries, stages files under `/data`, and then invokes the framework installer.
+Run as `root`. The router-oriented commands below use `curl -k` because some Xiaomi firmware builds cannot validate the available certificate chain. `MWEF_INSECURE=1` applies the same behavior to the release-archive download. The installer downloads into `/tmp`, verifies the pinned release SHA-256, rejects unsafe archive entries, stages files under `/data`, and then invokes the framework installer.
 
-GitHub source with `curl`:
+GitHub source:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh -o /tmp/mwef-install.sh && sh /tmp/mwef-install.sh
+export url='https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main' \
+  && MWEF_INSECURE=1 sh -c "$(curl -kfsSL "$url/install.sh")"
 ```
 
-GitHub source with `wget`:
+jsDelivr GitHub mirror:
 
 ```sh
-wget -q -O /tmp/mwef-install.sh https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh && sh /tmp/mwef-install.sh
-```
-
-jsDelivr mirror for the installer:
-
-```sh
-wget -q -O /tmp/mwef-install.sh https://cdn.jsdelivr.net/gh/VlHash/miwifi-extension-framework@main/install.sh && sh /tmp/mwef-install.sh
+export url='https://testingcf.jsdelivr.net/gh/VlHash/miwifi-extension-framework@main' \
+  && MWEF_INSECURE=1 sh -c "$(curl -kfsSL "$url/install.sh")"
 ```
 
 GitHub mirror for both the installer and release archive:
 
 ```sh
-wget -q -O /tmp/mwef-install.sh https://ghfast.top/https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh && MWEF_GITHUB_MIRROR=https://ghfast.top sh /tmp/mwef-install.sh
+export url='https://ghfast.top/https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main' \
+  && MWEF_GITHUB_MIRROR='https://ghfast.top' MWEF_INSECURE=1 sh -c "$(curl -kfsSL "$url/install.sh")"
 ```
 
-`MWEF_GITHUB_MIRROR` is an optional URL prefix. A mirror cannot bypass package verification: the embedded release SHA-256 is always checked. For legacy TLS clients only, explicitly set `MWEF_INSECURE=1`; integrity verification remains mandatory.
+`MWEF_GITHUB_MIRROR` is an optional URL prefix. The embedded release SHA-256 is always checked, including when a mirror or `MWEF_INSECURE=1` is used. However, `curl -k` does not authenticate the server that supplies `install.sh`; a man-in-the-middle could replace the installer and its embedded checksum. Use these commands only on a trusted network and prefer normal certificate verification whenever the router supports it.
 
 ### Local archive
 
@@ -83,6 +81,15 @@ chmod 755 /data/other_vol/xqext/scripts/*.sh
 ```
 
 The installer keeps legacy XQExt files as a migration backup, rebuilds the OverlayFS layers, and registers the `firewall.xqext` startup entry. It does not reboot the router or proactively reload the firewall.
+
+### Update from Framework Settings
+
+Open **Extensions → Framework Settings → Framework Update** to either:
+
+- check the official `plugins`-branch update index and install its release; or
+- upload an official `mwef-<version>.tar.gz` release package.
+
+Online and uploaded releases are limited to 16 MiB. Browser uploads use ordered 32 KiB chunks to remain compatible with the Xiaomi Web service's request-size limit; the router checks the reconstructed archive's final size and hash. MWEF rejects unexpected archive paths, links, and special files before activation. Online releases must also match the size and SHA-256 in the update index. The current `/data/other_vol/xqext` framework is moved to `/data/other_vol/xqext-framework-recovery/` before the staged release is activated; if installation or repatching fails, MWEF restores the previous framework. Plugins and settings are carried into the new version. Framework downgrades are rejected by the WebUI updater.
 
 ## Plugin Development
 

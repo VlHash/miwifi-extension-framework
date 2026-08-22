@@ -40,7 +40,7 @@ done
 
 find "$BASE/router-overlay" "$BASE/builtin-plugins" -type d -exec chmod 755 {} \;
 find "$BASE/router-overlay" "$BASE/builtin-plugins" -type f -exec chmod 644 {} \;
-chmod 755 "$BASE/scripts/xqext-init.sh" "$BASE/scripts/mwef-pluginctl.sh" "$BASE/scripts/install.sh" "$BASE/scripts/uninstall.sh"
+chmod 755 "$BASE/scripts/xqext-init.sh" "$BASE/scripts/mwef-pluginctl.sh" "$BASE/scripts/mwef-update.sh" "$BASE/scripts/install.sh" "$BASE/scripts/uninstall.sh"
 
 "$INIT" restart || exit 1
 

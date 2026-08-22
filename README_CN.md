@@ -15,6 +15,7 @@ MWEF 是面向小米路由器原生 WebUI 的可扩展插件框架。项目保�
 - 插件 Overlay 自动合并并重新 patch，无需修改只读 SquashFS
 - 内置系统信息插件：动态机型/平台/内核/固件、CPU/RAM 图表、平均温度折叠详情、可写分区统计
 - 框架设置页面底部展示 GitHub Contributors；GitHub 不可访问时使用本地回退内容
+- 框架设置支持检查官方更新索引、安装已验证的在线 Release，或上传并验证框架 Release 包
 - `plugins` 分支提供版本化官方插件索引，为后续在线软件包管理做准备
 - `xqext` 兼容路径：`/data/other_vol/xqext`、`/xqext`、`/web/xqext`
 
@@ -39,39 +40,36 @@ Windows PowerShell：
 ./scripts/build.ps1
 ```
 
-两种方式均会生成包结构相同的 `dist/mwef-0.2.4.tar.gz`。
+两种方式均会生成包结构相同的 `dist/mwef-0.2.5.tar.gz`。
 
 ## 安装/升级
 
 ### 一键安装
 
-请使用 `root` 执行。安装器会将文件下载到 `/tmp`，校验发布包 SHA-256，拒绝不安全的归档条目，在 `/data` 下完成 staging，然后调用框架安装器。
+请使用 `root` 执行。部分小米固件无法验证现有证书链，因此下面面向路由器的命令使用 `curl -k`，并通过 `MWEF_INSECURE=1` 让发布归档下载采用相同方式。安装器会将文件下载到 `/tmp`，校验固定发布包 SHA-256，拒绝不安全的归档条目，在 `/data` 下完成 staging，然后调用框架安装器。
 
-使用 GitHub 官方源和 `curl`：
+使用 GitHub 官方源：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh -o /tmp/mwef-install.sh && sh /tmp/mwef-install.sh
+export url='https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main' \
+  && MWEF_INSECURE=1 sh -c "$(curl -kfsSL "$url/install.sh")"
 ```
 
-使用 GitHub 官方源和 `wget`：
+使用 jsDelivr GitHub 镜像：
 
 ```sh
-wget -q -O /tmp/mwef-install.sh https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh && sh /tmp/mwef-install.sh
-```
-
-使用 jsDelivr 获取安装器：
-
-```sh
-wget -q -O /tmp/mwef-install.sh https://cdn.jsdelivr.net/gh/VlHash/miwifi-extension-framework@main/install.sh && sh /tmp/mwef-install.sh
+export url='https://testingcf.jsdelivr.net/gh/VlHash/miwifi-extension-framework@main' \
+  && MWEF_INSECURE=1 sh -c "$(curl -kfsSL "$url/install.sh")"
 ```
 
 安装器和发布归档均使用 GitHub 镜像：
 
 ```sh
-wget -q -O /tmp/mwef-install.sh https://ghfast.top/https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh && MWEF_GITHUB_MIRROR=https://ghfast.top sh /tmp/mwef-install.sh
+export url='https://ghfast.top/https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main' \
+  && MWEF_GITHUB_MIRROR='https://ghfast.top' MWEF_INSECURE=1 sh -c "$(curl -kfsSL "$url/install.sh")"
 ```
 
-`MWEF_GITHUB_MIRROR` 是可选的 URL 前缀。使用镜像不会绕过软件包校验，安装器始终核对内置的发布归档 SHA-256。仅在老旧 TLS 客户端确实无法连接时显式设置 `MWEF_INSECURE=1`，完整性校验仍然强制执行。
+`MWEF_GITHUB_MIRROR` 是可选的 URL 前缀。即使使用镜像或 `MWEF_INSECURE=1`，安装器仍会核对内置的发布归档 SHA-256。但是 `curl -k` 无法认证提供 `install.sh` 的服务器，中间人仍可能同时替换安装器及其内置校验和。请仅在可信网络中使用这些命令；路由器能够正常验证证书时，仍建议启用证书认证。
 
 ### 本地归档
 
@@ -83,6 +81,15 @@ chmod 755 /data/other_vol/xqext/scripts/*.sh
 ```
 
 安装脚本会保留旧 XQExt 文件作为迁移备份，重建 Overlay 层，并登记 `firewall.xqext` 开机启动项。不会重启路由器，也不会主动 reload 防火墙。
+
+### 从框架设置更新
+
+打开“**扩展设置 → 框架设置 → 框架更新**”，可以：
+
+- 检查 `plugins` 分支中的官方更新索引并安装对应 Release；或
+- 上传官方 `mwef-<version>.tar.gz` Release 包。
+
+在线包和上传包上限为 16 MiB。浏览器上传使用有序的 32 KiB 分片，以兼容小米 Web 服务的单请求大小限制；路由器会核对重组后归档的最终大小和哈希。激活前会拒绝异常归档路径、链接和特殊文件；在线包还必须与更新索引中的文件大小及 SHA-256 一致。切换前，当前 `/data/other_vol/xqext` 会移入 `/data/other_vol/xqext-framework-recovery/`；安装或重新 patch 失败时自动恢复旧框架。插件和设置会迁移至新版。WebUI 更新器不允许降级框架。
 
 ## 开发插件
 

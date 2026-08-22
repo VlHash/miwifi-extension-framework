@@ -11,7 +11,7 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
 <meta name="viewport" content="width=1200">
 <link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
 <link href="<%=resource%>/web/css/layout.css?v=<%=ver%>" rel="stylesheet">
-<link href="/xqext/core.css?v=0.2.4" rel="stylesheet">
+<link href="/xqext/core.css?v=0.2.5" rel="stylesheet">
 </head>
 <body>
 <div id="doc">
@@ -52,6 +52,36 @@ local pageTitle = language == "en" and "Framework Settings - MWEF" or "框架设
             </div>
             <div class="mwef-form-actions">
                 <button id="mwef-save-settings" class="mwef-btn mwef-btn-primary" type="button" data-i18n="saveApply">保存并生效</button>
+            </div>
+        </section>
+
+        <section class="mwef-section">
+            <h3 class="mwef-section-title" data-i18n="frameworkUpdate">框架更新</h3>
+            <div class="mwef-update-row">
+                <div class="mwef-update-copy">
+                    <strong data-i18n="onlineUpdate">在线更新</strong>
+                    <p class="mwef-tip">
+                        <span data-i18n="currentVersion">当前版本</span>: <span id="mwef-update-current">--</span>
+                        <span class="mwef-update-separator">·</span>
+                        <span id="mwef-update-status" data-i18n="updateNotChecked">尚未检查更新</span>
+                        <a id="mwef-update-notes" class="mwef-inline-link" href="#" target="_blank" rel="noopener noreferrer" hidden data-i18n="releaseNotes">发行说明</a>
+                    </p>
+                    <p class="mwef-tip" data-i18n="onlineUpdateTip">从官方更新索引获取 Release，验证文件大小与 SHA-256 后更新；失败时自动恢复原框架。</p>
+                </div>
+                <div class="mwef-update-actions">
+                    <button id="mwef-check-update" class="mwef-btn" type="button" data-i18n="checkUpdate">检查更新</button>
+                    <button id="mwef-online-update" class="mwef-btn mwef-btn-primary" type="button" data-i18n="updateOnline">在线更新</button>
+                </div>
+            </div>
+            <div class="mwef-update-row">
+                <div class="mwef-update-copy">
+                    <strong data-i18n="uploadFrameworkRelease">上传 Release 包</strong>
+                    <p class="mwef-tip" data-i18n="uploadFrameworkReleaseTip">上传官方 mwef-&lt;version&gt;.tar.gz；验包完成后会再次要求确认。</p>
+                </div>
+                <div class="mwef-update-actions">
+                    <input id="mwef-framework-package" type="file" accept=".tar.gz,.tgz,application/gzip" hidden>
+                    <button id="mwef-choose-framework-package" class="mwef-btn" type="button" data-i18n="chooseReleasePackage">选择 Release 包</button>
+                </div>
             </div>
         </section>
 
@@ -123,6 +153,6 @@ window.MWEF_CONFIG = {
     repositoryUrl: "https://github.com/VlHash/miwifi-extension-framework"
 };
 </script>
-<script src="/xqext/framework.js?v=0.2.4"></script>
+<script src="/xqext/framework.js?v=0.2.5"></script>
 </body>
 </html>
