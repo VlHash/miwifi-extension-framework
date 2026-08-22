@@ -1,0 +1,8 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/plugins/index.schema.json",
+  "schemaVersion": 1,
+  "name": "MWEF Official Plugin Index",
+  "maintainer": "VlHash",
+  "updated": "2026-08-22",
+  "plugins": []
+}
