@@ -15,6 +15,12 @@ MWEF 在不修改只读固件、不写 MTD 的前提下，为插件提供可审�
 5. 安装使用同一文件系统内的 staging 目录；升级前将旧版本移入 `.recovery`。
 6. 插件启停后重建生成层，再重新挂载 OverlayFS。
 
+## 框架一键安装器
+
+仓库根目录的 `install.sh` 会把固定版本的发布归档下载到 `/tmp`，核对脚本内置的 SHA-256，拒绝不安全的 tar 路径，并在 `/data/other_vol` 临时 staging 目录解包后拒绝链接和特殊文件。全部检查通过后，才会把框架文件复制到 `/data/other_vol/xqext` 并调用本地框架安装器。
+
+GitHub 镜像只是可选的传输前缀，不会关闭归档校验。TLS 证书检查默认启用；老旧客户端必须显式设置 `MWEF_INSECURE=1`，该模式下仍强制执行 SHA-256 校验。
+
 ## 权限模型
 
 Manifest 的 `permissions` 是请求集合，`.grants` 是管理员批准集合。框架受控 Hook Runner 会在执行脚本前检查 `shell.execute`。插件管理页面可以随时收回或增加批准权限。

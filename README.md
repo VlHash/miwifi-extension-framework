@@ -14,6 +14,8 @@ The built-in `system` plugin provides a system overview and has been verified on
 - A configurable plugin installation directory under `/data`; existing plugins are copied during migration and the previous directory is retained for recovery
 - Automatic plugin-overlay merging and WebUI repatching without modifying the read-only SquashFS
 - Built-in system information plugin with dynamically detected model/platform/kernel/firmware data, CPU and RAM charts, expandable mean-temperature details, and writable-partition usage
+- A GitHub Contributors bar on the Framework Settings page, with a local fallback when GitHub is unavailable
+- A versioned official plugin index on the `plugins` branch for future online package management
 - Compatibility with the existing `xqext` paths: `/data/other_vol/xqext`, `/xqext`, and `/web/xqext`
 
 ## Safety Boundary
@@ -24,13 +26,54 @@ Plugin packages containing absolute paths, path traversal, symbolic links, or sp
 
 ## Build the Framework
 
+On Unix, Linux, or macOS:
+
+```sh
+chmod +x ./build.sh
+./build.sh
+```
+
+On Windows PowerShell:
+
 ```powershell
 ./scripts/build.ps1
 ```
 
-Output: `dist/mwef-0.2.3.tar.gz`
+Both build methods produce `dist/mwef-0.2.4.tar.gz` with the same package layout.
 
 ## Install or Upgrade
+
+### One-click installer
+
+Run as `root`. The installer downloads into `/tmp`, verifies the release SHA-256, rejects unsafe archive entries, stages files under `/data`, and then invokes the framework installer.
+
+GitHub source with `curl`:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh -o /tmp/mwef-install.sh && sh /tmp/mwef-install.sh
+```
+
+GitHub source with `wget`:
+
+```sh
+wget -q -O /tmp/mwef-install.sh https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh && sh /tmp/mwef-install.sh
+```
+
+jsDelivr mirror for the installer:
+
+```sh
+wget -q -O /tmp/mwef-install.sh https://cdn.jsdelivr.net/gh/VlHash/miwifi-extension-framework@main/install.sh && sh /tmp/mwef-install.sh
+```
+
+GitHub mirror for both the installer and release archive:
+
+```sh
+wget -q -O /tmp/mwef-install.sh https://ghfast.top/https://raw.githubusercontent.com/VlHash/miwifi-extension-framework/main/install.sh && MWEF_GITHUB_MIRROR=https://ghfast.top sh /tmp/mwef-install.sh
+```
+
+`MWEF_GITHUB_MIRROR` is an optional URL prefix. A mirror cannot bypass package verification: the embedded release SHA-256 is always checked. For legacy TLS clients only, explicitly set `MWEF_INSECURE=1`; integrity verification remains mandatory.
+
+### Local archive
 
 Extract the archive into `/data/other_vol/xqext`, then run:
 
@@ -45,6 +88,7 @@ The installer keeps legacy XQExt files as a migration backup, rebuilds the Overl
 
 - [Plugin Development Guidelines](docs/plugin-development.md)
 - [Permissions and Security Model](docs/security-model.md)
+- [Online Plugin Index Specification](docs/plugin-index.md)
 - [Plugin Manifest JSON Schema](schema/mwef-plugin.schema.json)
 - [Hello MWEF Example](examples/hello-mwef)
 

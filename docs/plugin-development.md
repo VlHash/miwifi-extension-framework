@@ -117,3 +117,7 @@ Requested permissions are shown before installation. A plugin must not use permi
 ```
 
 Before release, validate JSON, JavaScript syntax, Lua syntax, shell syntax, archive paths, and both Chinese and English localization files.
+
+## 9. Online Distribution
+
+Plugins intended for the official online catalog must also comply with the [Online Plugin Index Specification](plugin-index.md). Publishing metadata never bypasses package validation, checksum verification, or administrator permission confirmation.

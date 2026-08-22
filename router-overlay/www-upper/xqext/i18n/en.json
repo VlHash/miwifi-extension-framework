@@ -53,5 +53,9 @@
   "permissionServiceControl": "Control services",
   "permissionServiceControlHelp": "Start, stop, or reload declared system services.",
   "permissionShellExecute": "Execute Shell",
-  "permissionShellExecuteHelp": "Run declared Shell scripts from the plugin package; this is a high-risk permission."
+  "permissionShellExecuteHelp": "Run declared Shell scripts from the plugin package; this is a high-risk permission.",
+  "githubContributors": "GitHub Contributors",
+  "contributorsLoading": "Loading contributors…",
+  "viewContributors": "View on GitHub",
+  "contributionCount": "{count} contributions"
 }

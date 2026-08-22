@@ -5,7 +5,7 @@
     "zh-CN": "系统信息",
     "en": "System Information"
   },
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": {
     "zh-CN": "MWEF 内置的硬件、资源、温度和存储状态插件。",
     "en": "Built-in hardware, resource, thermal and storage status plugin for MWEF."

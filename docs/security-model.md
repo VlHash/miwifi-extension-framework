@@ -15,6 +15,12 @@ MWEF provides an auditable and reversible plugin installation and runtime mechan
 5. Installation uses a staging directory on the same filesystem; the previous version is moved into `.recovery` before an upgrade.
 6. Enabling or disabling a plugin rebuilds the generated layers and remounts OverlayFS.
 
+## One-click Framework Installer
+
+The repository-root `install.sh` downloads a pinned release archive into `/tmp`, verifies its embedded SHA-256, rejects unsafe tar paths, and rejects links or special files after extracting into a temporary staging directory under `/data/other_vol`. Only then are framework files copied into `/data/other_vol/xqext` and the local framework installer invoked.
+
+GitHub mirrors are optional transport prefixes. They do not disable archive verification. TLS certificate checks are enabled by default; legacy clients must explicitly set `MWEF_INSECURE=1`, and SHA-256 verification remains mandatory in that mode.
+
 ## Permission Model
 
 The manifest `permissions` array is the requested set, while `.grants` stores the set approved by the administrator. The controlled MWEF hook runner checks for `shell.execute` before running a script. Approved permissions can be added or revoked at any time from the plugin-management page.

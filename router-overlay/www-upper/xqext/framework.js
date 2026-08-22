@@ -90,6 +90,64 @@
         var option = select.options[select.selectedIndex];
         if (dummy && option) dummy.textContent = option.textContent || option.innerText || '';
     }
+    function renderContributors(contributors) {
+        var container = byId('mwef-contributors');
+        var rendered = 0;
+        clear(container);
+
+        (contributors || []).forEach(function (contributor) {
+            var login = contributor && typeof contributor.login === 'string' ? contributor.login : '';
+            if (rendered >= 16 || !/^[A-Za-z0-9-]{1,39}$/.test(login)) return;
+
+            var profile = el('a', 'mwef-contributor');
+            profile.href = 'https://github.com/' + encodeURIComponent(login);
+            profile.target = '_blank';
+            profile.rel = 'noopener noreferrer';
+            profile.title = typeof contributor.contributions === 'number'
+                ? tr('contributionCount', '{count} contributions').replace('{count}', String(contributor.contributions))
+                : login;
+
+            if (typeof contributor.avatar_url === 'string' && /^https:\/\/avatars\.githubusercontent\.com\//.test(contributor.avatar_url)) {
+                var avatar = document.createElement('img');
+                avatar.src = contributor.avatar_url + (contributor.avatar_url.indexOf('?') === -1 ? '?s=64' : '&s=64');
+                avatar.alt = '';
+                avatar.width = 32;
+                avatar.height = 32;
+                avatar.loading = 'lazy';
+                avatar.referrerPolicy = 'no-referrer';
+                profile.appendChild(avatar);
+            } else {
+                profile.appendChild(el('span', 'mwef-contributor-fallback', login.charAt(0).toUpperCase()));
+            }
+            profile.appendChild(el('span', 'mwef-contributor-name', login));
+            container.appendChild(profile);
+            rendered += 1;
+        });
+
+        if (!rendered) {
+            renderContributors([{ login: 'VlHash', contributions: null }]);
+        }
+    }
+    function loadContributors() {
+        if (!config.contributorsUrl) {
+            renderContributors([{ login: 'VlHash', contributions: null }]);
+            return;
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', config.contributorsUrl, true);
+        xhr.timeout = 10000;
+        xhr.setRequestHeader('Accept', 'application/vnd.github+json');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) return;
+            var contributors = null;
+            try { if (xhr.status === 200) contributors = JSON.parse(xhr.responseText); } catch (error) {}
+            renderContributors(Array.isArray(contributors) ? contributors : [{ login: 'VlHash', contributions: null }]);
+        };
+        xhr.onerror = function () { renderContributors([{ login: 'VlHash', contributions: null }]); };
+        xhr.ontimeout = xhr.onerror;
+        xhr.send(null);
+    }
     function renderPlugins(plugins) {
         var body = byId('mwef-plugin-list');
         clear(body);
@@ -141,7 +199,7 @@
     function loadLanguage(language) {
         return new Promise(function (resolve) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.3', true);
+            xhr.open('GET', '/xqext/i18n/' + encodeURIComponent(language) + '.json?v=0.2.4', true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) return;
                 try { if (xhr.status === 200) state.i18n = JSON.parse(xhr.responseText); } catch (error) {}
@@ -246,5 +304,5 @@
     byId('mwef-modal-confirm').onclick = confirmModal;
     byId('mwef-modal-mask').onclick = function (event) { if (event.target === this) closeModal(); };
 
-    refresh();
+    refresh().then(loadContributors);
 }());
