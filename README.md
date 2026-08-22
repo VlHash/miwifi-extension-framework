@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README_CN.md)
 
-MWEF is an extensible plugin framework for the native Xiaomi router WebUI, maintained by **VlHash**. It preserves the legacy `xqext` routes, static-resource prefixes, and persistent directory layout so existing installations can be upgraded in place.
+MWEF is an extensible plugin framework for the native Xiaomi router WebUI. It preserves the legacy `xqext` routes, static-resource prefixes, and persistent directory layout so existing installations can be upgraded in place.
 
 The built-in `system` plugin provides a system overview and has been verified on the Xiaomi Router BE6500 Pro (`ipq53xx/generic`).
 
